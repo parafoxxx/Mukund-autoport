@@ -79,16 +79,25 @@ function onWords(words: string[]) {
   return hit;
 }
 
-/** A finished phrase: a trip to a chapter, the express tour, or a question for Mukund. */
+const TRIP = /\b(chalo|chal|le chalo|go to|go|take me|drive me|show me|open|jaana|jana|le jao|lejao)\b/i;
+const ANYWHERE = /\b(anywhere|somewhere|next|kahin|kahi|kahi bhi|kahin bhi|surprise)\b/i;
+const HELLO = /^\W*(hello|hi|hey|hii|namaste|namaskar|hola|yo)\b/i;
+
+/** Sets off for chapter i, in the auto. */
+function tripTo(i: number) {
+  board(); closeStop();
+  ui.set({ target: i, express: false, reply: `Chalo! Heading to ${STOPS[i].name}.` });
+}
+
+/** A finished phrase: a trip to a chapter, the express tour, a hello, or a nudge towards what works. */
 function onPhrase(text: string, hadCommand: boolean) {
   const cmd = parse(text);
-  if (cmd.kind === "go" && /(chalo|chal|le chalo|go to|take me|jaana|jana)/i.test(text)) {
-    board(); closeStop();
-    ui.set({ target: cmd.stop, express: false, reply: `Chalo! Heading to ${STOPS[cmd.stop].name}.` });
-    return;
-  }
+  if (cmd.kind === "go" && TRIP.test(text)) return tripTo(cmd.stop);
   if (cmd.kind === "express") { startExpress(); return; }
-  void hadCommand;
+  if (TRIP.test(text) && ANYWHERE.test(text)) return tripTo(ui.get().nextStop);
+  if (HELLO.test(text)) { ui.set({ reply: "Namaste! Bolo “chalo” and we’re off." }); return; }
+  // heard, but nothing to act on: say what it heard and what it understands, instead of doing nothing
+  if (!hadCommand) ui.set({ reply: `Heard “${text.replace(/[.!?]+$/, "")}”. Try “chalo”, “left”, “ruko”, or “take me to NoBroker”.` });
 }
 
 const status = (voiceStatus: string) => ui.set({ voiceStatus });
