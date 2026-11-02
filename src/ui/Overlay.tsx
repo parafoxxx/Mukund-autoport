@@ -2,6 +2,7 @@ import { Fragment, useEffect, useRef, useState, type CSSProperties, type Pointer
 import { AnimatePresence, motion } from "motion/react";
 import { useProgress } from "@react-three/drei";
 import { CHAPTER_COUNT_WORD, DECKS, EXHIBITS, ME, STOPS } from "../content";
+import { STORIES, type Story } from "../stories";
 import { HALL_STOP, inHall, spotNear, stepDeck, type Spot } from "../game/hall";
 import { startVoiceDrive, toggleVoiceDrive, voiceDriveSupported } from "../game/voiceDrive";
 import { FIRST, GUEST } from "../game/guest";
@@ -15,6 +16,7 @@ import { IconArrow, IconBolt, IconHelp, IconLink, IconMap, IconMic, IconPlay, Ic
 import { BADGES } from "../game/achievements";
 import { RouteMap, travelTo } from "./RouteMap";
 import { MiniMap } from "./MiniMap";
+import { markTip, Tip } from "./Tip";
 
 const N = STOPS.length;
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -332,12 +334,21 @@ function ScoreChip() {
   const coins = useUI((s) => s.coins);
   const smashed = useUI((s) => s.smashed);
   const badges = useUI((s) => s.badges.length);
+  const active = useUI((s) => s.active);
+  const open = useUI((s) => s.badgesOpen);
+  useEffect(() => { if (open) markTip("badges"); }, [open]);
   return (
-    <button className="glass chip-score" onClick={() => ui.set({ badgesOpen: true })} aria-label="Achievements">
-      <span title="Coins"><i className="dot-coin" /><b>{coins}</b></span>
-      <span title="Smashed"><i className="dot-matka" /><b>{smashed}</b></span>
-      <span title="Achievements"><IconTrophy /><b>{badges}</b>/{BADGES.length}</span>
-    </button>
+    <Tip id="badges" when={active === null && coins + smashed + badges > 0} place="below" align="left" title={`${BADGES.length} things to find`}
+      action={{ label: "See them", run: () => ui.set({ badgesOpen: true }) }}
+      anchor={
+        <button className="glass chip-score" onClick={() => ui.set({ badgesOpen: true })} aria-label="Achievements">
+          <span title="Coins"><i className="dot-coin" /><b>{coins}</b></span>
+          <span title="Smashed"><i className="dot-matka" /><b>{smashed}</b></span>
+          <span title="Achievements"><IconTrophy /><b>{badges}</b>/{BADGES.length}</span>
+        </button>
+      }>
+      Coins, smashed matkas and secret achievements. Tap here to see what's still locked.
+    </Tip>
   );
 }
 
@@ -423,39 +434,30 @@ function Controls() {
   const express = useUI((s) => s.express);
   const muted = useUI((s) => s.muted);
   const [help, setHelp] = useState(false);
-  // once the first chapter is done, point out the map (until it's been opened)
+  // first-time tips: the map after chapter one, the express cut after chapter two
   const seen = useUI((s) => s.visited.length);
   const active = useUI((s) => s.active);
   const mapOpen = useUI((s) => s.mapOpen);
-  const [mapHint, setMapHint] = useState(false);
-  const usedMap = useRef(false);
-  useEffect(() => { if (mapOpen) { usedMap.current = true; setMapHint(false); } }, [mapOpen]);
-  useEffect(() => {
-    if (seen < 1 || active !== null || express || usedMap.current) return;
-    const t = setTimeout(() => setMapHint(true), 1200);
-    const u = setTimeout(() => setMapHint(false), 14000);
-    return () => { clearTimeout(t); clearTimeout(u); };
-  }, [seen, active, express]);
+  useEffect(() => { if (mapOpen) markTip("map"); }, [mapOpen]);
+  useEffect(() => { if (express) markTip("express"); }, [express]);
+  const calm = active === null && !mapOpen;
+  const openMap = () => ui.set({ mapOpen: true });
   return (
     <div className="ctrls">
-      <button className={"ibtn wide" + (express ? " on" : "")} onClick={() => (express ? ui.set({ express: false, target: null }) : startExpress())} aria-pressed={express}>
-        <IconBolt /><span>{express ? "Stop express" : "Express cut"}</span>
-      </button>
-      <span className="map-btn-wrap">
-        <button className={"ibtn wide" + (mapHint ? " nudge" : "")} onClick={() => { setMapHint(false); ui.set({ mapOpen: true }); }} aria-label="Map (M)" title="Map (M)"><IconMap /><span>Map</span></button>
-        <AnimatePresence>
-          {mapHint && (
-            <motion.div className="map-hint" exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
-              <p className="mono">Tip · skip ahead</p>
-              <p>Jump to <b>any chapter</b> from the map. The auto drives you there.</p>
-              <div className="map-hint-row">
-                <button className="btn-primary sm" onClick={() => { setMapHint(false); ui.set({ mapOpen: true }); }}>Open map{!coarse && <kbd>M</kbd>}</button>
-                <button className="btn-ghost sm" onClick={() => setMapHint(false)}>Later</button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </span>
+      <Tip id="express" when={calm && seen >= 2 && !express} title="Short on time?"
+        action={{ label: "Start it", run: startExpress }}
+        anchor={
+          <button className={"ibtn wide" + (express ? " on" : "")} onClick={() => (express ? ui.set({ express: false, target: null }) : startExpress())} aria-pressed={express}>
+            <IconBolt /><span>{express ? "Stop express" : "Express cut"}</span>
+          </button>
+        }>
+        Express cut drives the rest of the route for you, chapter by chapter, hands-free.
+      </Tip>
+      <Tip id="map" when={calm && seen >= 1 && !express} title="Skip ahead"
+        action={{ label: "Open map", kbd: coarse ? undefined : "M", run: openMap }}
+        anchor={<button className="ibtn wide" onClick={openMap} aria-label="Map (M)" title="Map (M)"><IconMap /><span>Map</span></button>}>
+        Jump to any chapter from the map. The auto drives you there.
+      </Tip>
       <button className="ibtn" onClick={() => { setMuted(!muted); ui.set({ muted: !muted }); }} aria-label={muted ? "Unmute" : "Mute"}><IconSound off={muted} /></button>
       <button className="ibtn" onClick={resetToRoad} aria-label="Back on the road (R)" title="Back on the road (R)"><IconReset /></button>
       <button className={"ibtn" + (help ? " on" : "")} onClick={() => setHelp(!help)} aria-label="Help" aria-expanded={help}><IconHelp /></button>
@@ -578,11 +580,21 @@ function VoiceDrivePill() {
   const on = useUI((s) => s.voiceDrive);
   const status = useUI((s) => s.voiceStatus);
   const heard = useUI((s) => s.voiceHeard);
+  const phase = useUI((s) => s.phase);
+  const active = useUI((s) => s.active);
+  const mapOpen = useUI((s) => s.mapOpen);
+  useEffect(() => { if (on) markTip("voice"); }, [on]);
   if (!voiceDriveSupported) return null;
   if (!on) return (
-    <button className="voice auto-pill" onClick={voiceDriveNow}>
-      <span className="voice-txt">Drive by voice</span>{!coarse && <kbd>B</kbd>}
-    </button>
+    <Tip id="voice" when={phase === "ride" && active === null && !mapOpen} delay={6000} place="above" align="right" title="Drive with your voice"
+      action={{ label: "Try it", kbd: coarse ? undefined : "B", run: voiceDriveNow }}
+      anchor={
+        <button className="voice auto-pill" onClick={voiceDriveNow}>
+          <span className="voice-txt">Drive by voice</span>{!coarse && <kbd>B</kbd>}
+        </button>
+      }>
+      Say “chalo”, “left”, “ruko”, or “take me to NoBroker”.
+    </Tip>
   );
   return (
     <button className="glass vd-panel" onClick={toggleVoiceDrive} aria-label="Stop driving by voice">
@@ -755,10 +767,16 @@ function Lightbox() {
 
 /* ---------- inside Competitions & Hackathons ---------- */
 
-type Shown = { title: string; kicker: string; blurb: string; facts: { n: string; l: string }[]; call?: string; learned?: string; image?: string; nav?: { i: number; n: number }; actions: { label: string; run: () => void }[] };
+type Shown = { title: string; kicker: string; blurb: string; facts: { n: string; l: string }[]; story?: Story; image?: string; nav?: { i: number; n: number }; actions: { label: string; run: () => void }[] };
 
-/** What's on the exhibit card right now; Enter runs its first action. */
+/** What's on the exhibit card right now; Enter runs its first action, Space opens the full story. */
 let current: Shown | null = null;
+let toggleStory: (() => void) | null = null;
+export function exhibitStory() {
+  if (!toggleStory) return false;
+  toggleStory();
+  return true;
+}
 export function exhibitAction() {
   if (!current || !current.actions.length) return false;
   current.actions[0].run();
@@ -769,14 +787,14 @@ function describe(spot: Spot): Shown {
   if (spot.kind === "deck") {
     const d = DECKS[spot.index];
     return {
-      title: d.name, kicker: `Case competition · ${spot.index + 1} of ${DECKS.length}`, blurb: d.brief, facts: [], image: `/decks/${d.file}-1.jpg`,
+      title: d.name, kicker: `Case competition · ${spot.index + 1} of ${DECKS.length}`, blurb: d.brief, facts: [], image: `/decks/${d.file}-1.jpg`, story: STORIES[d.file],
       nav: { i: spot.index, n: DECKS.length },
       actions: [{ label: "Open the deck", run: () => window.open(`/decks/${d.file}.pdf`, "_blank", "noopener") }],
     };
   }
   const e = EXHIBITS.find((x) => x.id === spot.exhibit)!;
   return {
-    title: e.name, kicker: e.kicker, blurb: e.blurb, facts: e.facts, call: e.call, learned: e.learned,
+    title: e.name, kicker: e.kicker, blurb: e.blurb, facts: e.facts, story: STORIES[e.id],
     actions: e.links.map((l) => ({ label: l.label, run: () => (l.embed ? ui.set({ embed: l.url }) : window.open(l.url, "_blank", "noopener")) })),
   };
 }
@@ -787,6 +805,9 @@ function ExhibitCard() {
   const active = useUI((s) => s.active);
   const [shown, setShown] = useState<{ key: string; data: Shown } | null>(null);
   const [inside, setInside] = useState(false);
+  // the full story stays open as you step along the wall, so you can read deck after deck
+  const [open, setOpen] = useState(false);
+  toggleStory = shown?.data.story ? () => setOpen((o) => !o) : null;
   useEffect(() => {
     const t = setInterval(() => {
       const here = onFoot && active === null;
@@ -806,12 +827,25 @@ function ExhibitCard() {
           <div className="exhibit-body">
             <p className="mono label">{shown.data.kicker}</p>
             <h3>{shown.data.title}</h3>
-            <p className="exhibit-blurb">{shown.data.blurb}</p>
-            {(shown.data.call || shown.data.learned) && (
-              <dl className="exhibit-notes">
-                {shown.data.call && <><dt className="mono">The call</dt><dd>{shown.data.call}</dd></>}
-                {shown.data.learned && <><dt className="mono">What I learned</dt><dd>{shown.data.learned}</dd></>}
-              </dl>
+            {shown.data.story ? (
+              <>
+                <p className="exhibit-blurb">{shown.data.story.problem}</p>
+                <p className="story-call"><span className="mono">The call</span>{shown.data.story.call}</p>
+                <button className="story-toggle" onClick={() => setOpen(!open)} aria-expanded={open}>
+                  {open ? "Hide the story" : `Full story · ${shown.data.story.did.length} steps`}<IconArrow dir={open ? "up" : "down"} />{!coarse && <kbd>Space</kbd>}
+                </button>
+                {open && (
+                  <div className="story">
+                    <p className="mono">What we did</p>
+                    <ol>{shown.data.story.did.map((d) => <li key={d}>{d}</li>)}</ol>
+                    <p className="mono">What I learned</p>
+                    <p className="story-learned">{shown.data.story.learned}</p>
+                    {shown.data.story.team && <p className="story-team">{shown.data.story.team}</p>}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="exhibit-blurb">{shown.data.blurb}</p>
             )}
             {shown.data.facts.length > 0 && (
               <div className="exhibit-facts">{shown.data.facts.map((f) => <span key={f.l}><b>{f.n}</b>{f.l}</span>)}</div>

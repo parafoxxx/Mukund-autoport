@@ -118,7 +118,7 @@ export const STOPS: Stop[] = [
     lines: ["Nine case competitions, a national final and a hackathon podium. Every time: a real problem, a deadline, a team, and something shipped. Walk in and look around."],
     stats: [
       { n: "9", l: "case decks" }, { n: "National finalist", l: "Pacto · The Ken × Zerodha 2026" },
-      { n: "2nd", l: "Sarvam AI hackathon" }, { n: "Round 2", l: "Meesho DICE Season 3" },
+      { n: "2nd", l: "Sarvam AI hackathon" }, { n: "Semifinalist", l: "Meesho DICE Season 3" },
     ],
     walkIn: true,
     keywords: ["competition", "competitions", "hackathon", "hackathons", "case", "cases", "deck", "decks", "meesho", "dice", "sarvam", "pacto", "voice", "agent", "trophy", "hall"],
@@ -162,15 +162,13 @@ export const DECKS: Deck[] = [
   { file: "spotify", name: "Spotify", brief: "Premium conversion in India", slides: 2 },
   { file: "sarcathon", name: "SARCathon 2024 · ConsultQuest", brief: "Quality education in government schools", slides: 4 },
   { file: "prodmad", name: "ProdMad 4.0 · BioMorph", brief: "A product for bio-printed organ transplants", slides: 4 },
-  { file: "meesho", name: "Meesho DICE · Round 2", brief: "The Bharat Trial Network", slides: 4 },
+  { file: "meesho", name: "Meesho DICE · Semifinal", brief: "The Bharat Trial Network", slides: 4 },
 ];
 
 export type Exhibit = {
   id: "meesho" | "sarvam" | "pacto";
   name: string; kicker: string; blurb: string;
   facts: { n: string; l: string }[];
-  /** The decision that mattered, and the lesson. */
-  call?: string; learned?: string;
   links: { label: string; url: string; embed?: boolean }[];
 };
 
@@ -178,10 +176,8 @@ export type Exhibit = {
 export const EXHIBITS: Exhibit[] = [
   {
     id: "meesho", name: "Meesho DICE: Pehle Try, Phir Buy", kicker: "Business track · Season 3",
-    blurb: "Brands spend ~₹5,400 Cr a year putting samples in Bharat's hands and learn almost nothing back. Our answer, the Bharat Trial Network: a sample in a chosen household's Meesho parcel, and her answer back to the brand. We took it to round 2, with a working prototype.",
-    facts: [{ n: "~₹5,400 Cr", l: "spent on sampling a year" }, { n: "Round 2", l: "Meesho DICE S3" }, { n: "Live", l: "working prototype" }],
-    call: "We built a working prototype, not just a deck, so the judges could click through the idea themselves.",
-    learned: "A free sample is only worth something if the brand hears back. The feedback loop is the product.",
+    blurb: "Brands spend ~₹5,400 Cr a year putting samples in Bharat's hands and learn almost nothing back. Our answer, the Bharat Trial Network: a sample in a chosen household's Meesho parcel, and her answer back to the brand. We took it to the semifinal, with a working prototype.",
+    facts: [{ n: "~₹5,400 Cr", l: "spent on sampling a year" }, { n: "Semifinalist", l: "Meesho DICE S3" }, { n: "Live", l: "working prototype" }],
     links: [
       { label: "Try the live prototype", url: "https://vaibhav-itauriya.github.io/moshi-moshi-meesho-dice-3.0/", embed: true },
       { label: "Open the deck", url: "/decks/meesho.pdf" },
@@ -191,16 +187,12 @@ export const EXHIBITS: Exhibit[] = [
     id: "sarvam", name: "Sarvam AI hackathon", kicker: "2nd place",
     blurb: "The brief: build a working AI agent from scratch, against the clock. 45 minutes later, we were on the podium.",
     facts: [{ n: "2nd", l: "place" }, { n: "45 min", l: "to build an agent" }],
-    call: "With 45 minutes on the clock, we cut the scope to one job the agent does end to end, then polished that.",
-    learned: "Under a deadline, a small thing that works beats a big thing that almost does.",
     links: [{ label: "Try the agent", url: "https://saravam-hackon-mgnov3vtemdfbm2uwu6vpt.streamlit.app/" }],
   },
   {
     id: "pacto", name: "Pacto", kicker: "National finalist · The Ken × Zerodha 2026",
     blurb: "I led Pacto: a Hinglish voice-and-chat AI agent that keeps you accountable. In an 8-person pilot, regular no-shows turned into near-daily attendance.",
     facts: [{ n: "National finalist", l: "The Ken × Zerodha 2026" }, { n: "18", l: "test cycles on the prompts" }],
-    call: "Instead of adding features, we put the prompts through 18 rounds of testing with real users.",
-    learned: "Accountability sticks when it sounds like a friend in Hinglish, not like a reminder app.",
     links: [], // add the working link here: { label: "Try Pacto", url: "https://…" }
   },
 ];

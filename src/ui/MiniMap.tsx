@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { STOPS } from "../content";
 import { focus, sim, ui, useUI, walker } from "../game/store";
+import { Tip } from "./Tip";
 import { nearestSample, PLACEMENTS, PONDS, SAMPLES, SAMPLE_COUNT, STOP_POS, STOP_U } from "../game/track";
 
 const SIZE = 172, R = SIZE / 2, SCALE = 1.05; // px per metre: about 80 m to the edge
@@ -11,6 +12,9 @@ export function MiniMap() {
   const ref = useRef<HTMLCanvasElement>(null);
   const next = useUI((s) => s.nextStop);
   const distance = useUI((s) => s.distance);
+  const phase = useUI((s) => s.phase);
+  const active = useUI((s) => s.active);
+  const mapOpen = useUI((s) => s.mapOpen);
 
   useEffect(() => {
     const cv = ref.current!;
@@ -110,13 +114,18 @@ export function MiniMap() {
   }, []);
 
   return (
-    <button className="minimap" onClick={() => ui.set({ mapOpen: true })} aria-label="Open the map (M)" title="Open the map (M)">
-      <canvas ref={ref} style={{ width: SIZE, height: SIZE }} />
-      <span className="minimap-dest">
-        <i style={{ background: STOPS[next].color }} />
-        <b>{String(next + 1).padStart(2, "0")} · {STOPS[next].name}</b>
-        <em>{distance} m</em>
-      </span>
-    </button>
+    <Tip id="radar" when={phase === "ride" && active === null && !mapOpen} delay={20000} place="above" align="left" title="Your radar"
+      anchor={
+        <button className="minimap" onClick={() => ui.set({ mapOpen: true })} aria-label="Open the map (M)" title="Open the map (M)">
+          <canvas ref={ref} style={{ width: SIZE, height: SIZE }} />
+          <span className="minimap-dest">
+            <i style={{ background: STOPS[next].color }} />
+            <b>{String(next + 1).padStart(2, "0")} · {STOPS[next].name}</b>
+            <em>{distance} m</em>
+          </span>
+        </button>
+      }>
+      Follow the gold line to the next chapter. Tap the radar for the full map.
+    </Tip>
   );
 }

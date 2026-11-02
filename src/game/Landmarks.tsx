@@ -858,7 +858,7 @@ function MeeshoBooth() {
         <Text font={FONT_SERIF} position={[0, 1.45, 0.02]} fontSize={0.17} color="#f6f2ea">Live prototype · tap to try</Text>
       </group>
       <mesh position={[0, 0.3, 2.3]}><boxGeometry args={[4.6, 0.5, 0.15]} /><meshStandardMaterial color="#9f2089" /></mesh>
-      <Text font={FONT_SERIF} position={[0, 0.32, 2.39]} fontSize={0.24} color="#ffffff">MEESHO DICE · ROUND 2</Text>
+      <Text font={FONT_SERIF} position={[0, 0.32, 2.39]} fontSize={0.24} color="#ffffff">MEESHO DICE · SEMIFINALIST</Text>
     </group>
   );
 }

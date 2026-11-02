@@ -7,7 +7,7 @@ import { cue, ui, walker } from "./game/store";
 import { stepDeck } from "./game/hall";
 import { startMusic } from "./game/music";
 import { EMOTES, toggleAuto } from "./game/Player";
-import { beginRide, exhibitAction, lightboxKey, Overlay, resetToRoad, voiceDriveNow } from "./ui/Overlay";
+import { beginRide, exhibitAction, exhibitStory, lightboxKey, Overlay, resetToRoad, voiceDriveNow } from "./ui/Overlay";
 import { toggleVoiceDrive } from "./game/voiceDrive";
 import { GUEST } from "./game/guest";
 
@@ -31,6 +31,7 @@ export default function App() {
     if (code === "KeyH") horn();
     if (code === "KeyR" && s.phase === "ride") resetToRoad();
     if (code === "Enter" && s.onFoot && s.active === null && exhibitAction()) return;
+    if (code === "Space" && s.onFoot && s.active === null && exhibitStory()) return;
     // at the deck wall: left/right step to the neighbouring deck
     const side = code === "KeyA" || code === "ArrowLeft" ? -1 : code === "KeyD" || code === "ArrowRight" ? 1 : 0;
     if (side && s.onFoot && s.active === null && s.phase === "ride" && stepDeck(walker.pos, side)) return;
