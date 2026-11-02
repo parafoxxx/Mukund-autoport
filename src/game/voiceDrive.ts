@@ -224,14 +224,22 @@ function stopServerEar() {
   ear = null;
 }
 
+let serverMisses = 0;
 async function transcribe(blob: Blob) {
   if (blob.size < 1500 || mode !== "server") return; // a click, not a word
   status("Understanding…");
   try {
     const r = await fetch("/api/stt", { method: "POST", headers: { "content-type": blob.type || "audio/webm" }, body: blob });
     if (r.status === 501) { useBrowserEar(); return; }
-    const { text } = (await r.json()) as { text?: string };
     if (mode !== "server") return;
+    // a failing speech service shouldn't loop silently: say so, and after a few misses use the browser's ear
+    if (!r.ok) {
+      if (++serverMisses >= 3) { useBrowserEar(); return; }
+      status("Didn't catch that. Still listening…");
+      return;
+    }
+    serverMisses = 0;
+    const { text } = (await r.json()) as { text?: string };
     status("Listening. Say “chalo”.");
     if (!text) return;
     const words = text.split(/\s+/).filter(Boolean);
