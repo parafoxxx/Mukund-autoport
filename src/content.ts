@@ -98,7 +98,7 @@ export const STOPS: Stop[] = [
   {
     id: "chillhai", name: "Chill Hai", landmark: "stall", color: "#e4007c", sticker: "🛍️",
     title: "Built a brand. Named it Chill Hai.",
-    lines: ["A campus D2C brand from zero: product design, vendors, pricing, fulfilment and Instagram.", "(Irony noted: nothing about it was chill.)"],
+    lines: ["A campus D2C brand from zero: product design, vendors, pricing, fulfilment and Instagram.", "The call: ₹0 on ads. Every sale came from Instagram and word of mouth.", "(Irony noted: nothing about it was chill.)"],
     stats: [{ n: "₹3.75L+", l: "revenue in a year" }, { n: "₹1L+", l: "in month one" }, { n: "₹0", l: "spent on ads" }],
     photo: "/photos/chillhai.jpg", keywords: ["chill hai", "chill", "brand", "business", "startup", "d2c", "store"],
     link: { label: "@chill_hai.official", url: "https://www.instagram.com/chill_hai.official/" },
@@ -144,6 +144,7 @@ export const STOPS: Stop[] = [
     id: "wispr", name: "Wispr Flow", landmark: "billboard", color: "#ff3d00", sticker: "🚀",
     title: "Last stop: Wispr Flow, Bengaluru.",
     lines: ["Growth needs someone who talks to people, ships fast and measures everything.", "I've done all three. And I built this entire ride by voice."],
+    stats: [{ n: "November", l: "can start" }, { n: "Full-time", l: "available" }, { n: "Bengaluru", l: "ready to move" }],
     photo: "/photos/mukund.jpg", keywords: ["wispr", "whisper", "bengaluru", "bangalore", "job", "hire", "end", "last"],
     act: "conduct", then: "dance", quip: "Next stop: Wispr Flow. Main ready hoon.",
   },
@@ -168,6 +169,8 @@ export type Exhibit = {
   id: "meesho" | "sarvam" | "pacto";
   name: string; kicker: string; blurb: string;
   facts: { n: string; l: string }[];
+  /** The decision that mattered, and the lesson. */
+  call?: string; learned?: string;
   links: { label: string; url: string; embed?: boolean }[];
 };
 
@@ -177,6 +180,8 @@ export const EXHIBITS: Exhibit[] = [
     id: "meesho", name: "Meesho DICE: Pehle Try, Phir Buy", kicker: "Business track · Season 3",
     blurb: "Brands spend ~₹5,400 Cr a year putting samples in Bharat's hands and learn almost nothing back. Our answer, the Bharat Trial Network: a sample in a chosen household's Meesho parcel, and her answer back to the brand. We took it to round 2, with a working prototype.",
     facts: [{ n: "~₹5,400 Cr", l: "spent on sampling a year" }, { n: "Round 2", l: "Meesho DICE S3" }, { n: "Live", l: "working prototype" }],
+    call: "We built a working prototype, not just a deck, so the judges could click through the idea themselves.",
+    learned: "A free sample is only worth something if the brand hears back. The feedback loop is the product.",
     links: [
       { label: "Try the live prototype", url: "https://vaibhav-itauriya.github.io/moshi-moshi-meesho-dice-3.0/", embed: true },
       { label: "Open the deck", url: "/decks/meesho.pdf" },
@@ -186,12 +191,16 @@ export const EXHIBITS: Exhibit[] = [
     id: "sarvam", name: "Sarvam AI hackathon", kicker: "2nd place",
     blurb: "The brief: build a working AI agent from scratch, against the clock. 45 minutes later, we were on the podium.",
     facts: [{ n: "2nd", l: "place" }, { n: "45 min", l: "to build an agent" }],
+    call: "With 45 minutes on the clock, we cut the scope to one job the agent does end to end, then polished that.",
+    learned: "Under a deadline, a small thing that works beats a big thing that almost does.",
     links: [{ label: "Try the agent", url: "https://saravam-hackon-mgnov3vtemdfbm2uwu6vpt.streamlit.app/" }],
   },
   {
     id: "pacto", name: "Pacto", kicker: "National finalist · The Ken × Zerodha 2026",
     blurb: "I led Pacto: a Hinglish voice-and-chat AI agent that keeps you accountable. In an 8-person pilot, regular no-shows turned into near-daily attendance.",
     facts: [{ n: "National finalist", l: "The Ken × Zerodha 2026" }, { n: "18", l: "test cycles on the prompts" }],
+    call: "Instead of adding features, we put the prompts through 18 rounds of testing with real users.",
+    learned: "Accountability sticks when it sounds like a friend in Hinglish, not like a reminder app.",
     links: [], // add the working link here: { label: "Try Pacto", url: "https://…" }
   },
 ];

@@ -489,3 +489,19 @@ kbd {
 .reel i::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 60px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent); animation: reelshine 1.1s linear infinite; }
 @keyframes reelshine { from { transform: translateX(-60px); } to { transform: translateX(360px); } }
 .loader .begin { margin-top: 6px; }
+
+/* ---------- title: one click to the work ---------- */
+.work-jump { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 4px 0; border: 0; background: none; color: var(--paper-dim); font: 400 15px var(--sans); cursor: pointer; }
+.work-jump b { color: var(--paper); font-weight: 600; border-bottom: 1px solid var(--saffron); }
+.work-jump svg { color: var(--saffron); transition: transform 0.2s var(--ease); }
+.work-jump:hover b { color: var(--saffron); }
+.work-jump:hover svg { transform: translateX(4px); }
+.title-body .voice-cta, .title-body .work-jump { margin-right: 16px; }
+
+/* ---------- exhibit cards: the call and the lesson ---------- */
+.exhibit-notes { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); font-size: 13.5px; line-height: 1.4; }
+.exhibit-notes dt { color: #e9c46a; font-size: 9.5px; padding-top: 3px; white-space: nowrap; }
+.exhibit-notes dd { color: var(--paper); }
+/* centred with margins: the card's own animation owns its transform */
+.exhibit, .exhibit-hint { left: 0; right: 0; margin-inline: auto; transform: none; }
+.exhibit-hint { width: max-content; }

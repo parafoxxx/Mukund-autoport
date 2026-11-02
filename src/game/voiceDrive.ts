@@ -13,7 +13,6 @@ import { horn } from "./sound";
 import { closeStop, startExpress } from "./Director";
 import { board } from "./Player";
 import { parse } from "./voice";
-import { askMukund } from "./chat";
 
 type Rec = {
   lang: string; continuous: boolean; interimResults: boolean;
@@ -89,8 +88,7 @@ function onPhrase(text: string, hadCommand: boolean) {
     return;
   }
   if (cmd.kind === "express") { startExpress(); return; }
-  const question = /\?|\b(mukund|kya|kaun|kyun|kaise|kab|kitna|what|why|how|who|tell|batao|bataiye|explain)\b/i.test(text);
-  if (!hadCommand && question && text.split(" ").length >= 3) askMukund(text);
+  void hadCommand;
 }
 
 const status = (voiceStatus: string) => ui.set({ voiceStatus });

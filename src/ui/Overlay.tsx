@@ -2,7 +2,8 @@ import { Fragment, useEffect, useRef, useState, type CSSProperties, type Pointer
 import { AnimatePresence, motion } from "motion/react";
 import { useProgress } from "@react-three/drei";
 import { CHAPTER_COUNT_WORD, DECKS, EXHIBITS, ME, STOPS } from "../content";
-import { inHall, spotNear, stepDeck, type Spot } from "../game/hall";
+import { HALL_STOP, inHall, spotNear, stepDeck, type Spot } from "../game/hall";
+import { startVoiceDrive, toggleVoiceDrive, voiceDriveSupported } from "../game/voiceDrive";
 import { FIRST, GUEST } from "../game/guest";
 import { bubbleAnchor, cue, sim, ui, useUI, walker } from "../game/store";
 import { closeStop, readTime, startExpress } from "../game/Director";
@@ -10,9 +11,9 @@ import { input } from "../game/input";
 import { audioRunning, babble, clack, setMuted, startEngine, voiceDuration, wakeAudio } from "../game/sound";
 import { nearestSample, roadHeading, SAMPLES } from "../game/track";
 import { board, EMOTES, nearAuto, placeWalkerAtStart, toggleAuto, walkerToRoad } from "../game/Player";
-import { IconArrow, IconBolt, IconHelp, IconLink, IconMap, IconPlay, IconReset, IconSound, IconTrophy } from "./icons";
+import { IconArrow, IconBolt, IconHelp, IconLink, IconMap, IconMic, IconPlay, IconReset, IconSound, IconTrophy } from "./icons";
 import { BADGES } from "../game/achievements";
-import { RouteMap } from "./RouteMap";
+import { RouteMap, travelTo } from "./RouteMap";
 import { MiniMap } from "./MiniMap";
 
 const N = STOPS.length;
@@ -33,6 +34,19 @@ export function beginRide(express: boolean) {
   // the express cut is a guided tour in the auto; otherwise he starts on foot beside it
   if (express) ui.set({ phase: "ride", express: true, target: 0, coach: "done", onFoot: false, boarded: true });
   else ui.set({ phase: "ride", coach: coachedBefore() ? "done" : "drive", onFoot: true });
+}
+
+/** From the title straight to Competitions & Hackathons: the decks, the prototypes, the podium. */
+export function jumpToWork() {
+  beginRide(false);
+  ui.set({ coach: "done" });
+  travelTo(HALL_STOP);
+}
+
+/** Drive by voice from anywhere: starts the ride if needed. */
+export function voiceDriveNow() {
+  if (ui.get().phase === "intro") beginRide(false);
+  startVoiceDrive();
 }
 
 export function resetToRoad() {
@@ -272,10 +286,21 @@ function TitleSequence() {
           </button>
           <button className="btn-ghost" onClick={secondary.on}>{coarse ? null : <IconPlay />}{secondary.label}</button>
         </motion.div>
+        {voiceDriveSupported && (
+          <motion.button className="voice-cta" onClick={voiceDriveNow} {...up(1.75)}>
+            <span className="voice-ic"><IconMic /></span>
+            <span><b>Drive it with your voice.</b> Say “chalo”.</span>
+            {!coarse && <kbd>B</kbd>}
+          </motion.button>
+        )}
+        <motion.button className="work-jump" onClick={jumpToWork} {...up(1.7)}>
+          Short on time? <b>Jump straight to my work</b><IconArrow dir="right" />
+        </motion.button>
         {!coarse && (
           <motion.div className="controls mono" {...up(1.85)}>
             <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> drive</span>
             <span><kbd>F</kbd> get in / out</span>
+            <span><kbd>B</kbd> drive by voice</span>
             <span><kbd>M</kbd> map</span>
             <span><kbd>H</kbd> horn</span>
           </motion.div>
@@ -296,7 +321,7 @@ function Hud({ hidden }: { hidden: boolean }) {
       <div className="hud-tr"><Controls /></div>
       <div className="hud-bl"><MiniMap /></div>
       <div className="hud-bc"><Hint /><Moves /><Route /></div>
-      <div className="hud-br"><AutoPill /><ReplyBubble /></div>
+      <div className="hud-br"><VoiceDrivePill /><AutoPill /><ReplyBubble /></div>
       {coarse && <TouchPad />}
     </motion.div>
   );
@@ -442,6 +467,7 @@ function Controls() {
               <li><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span>Walk, or drive the auto</li>
               <li><span><kbd>F</kbd><kbd>↵</kbd></span>Get in / out of the auto</li>
               <li><span><kbd>1</kbd>–<kbd>9</kbd></span>His moves (on foot)</li>
+              <li><span><kbd>B</kbd></span>Drive by voice: “chalo”, “tez”, “ruko”, “left”, “right”, “pom pom”</li>
               <li><span><kbd>M</kbd></span>Route map: jump to any chapter</li>
               <li><span><kbd>H</kbd></span>Horn (cows have opinions)</li>
               <li><span><kbd>Space</kbd></span>Continue a chapter</li>
@@ -543,6 +569,26 @@ function AutoPill() {
     <button className="voice auto-pill" onClick={() => { const m = toggleAuto(); if (m) ui.set({ reply: m }); }}>
       <span className="voice-txt">{onFoot ? "Hop in the auto" : "Get out"}</span>
       {!coarse && <kbd>F</kbd>}
+    </button>
+  );
+}
+
+/** Drive by voice: a pill to start it, then a live panel of what it heard. */
+function VoiceDrivePill() {
+  const on = useUI((s) => s.voiceDrive);
+  const status = useUI((s) => s.voiceStatus);
+  const heard = useUI((s) => s.voiceHeard);
+  if (!voiceDriveSupported) return null;
+  if (!on) return (
+    <button className="voice auto-pill" onClick={voiceDriveNow}>
+      <span className="voice-txt">Drive by voice</span>{!coarse && <kbd>B</kbd>}
+    </button>
+  );
+  return (
+    <button className="glass vd-panel" onClick={toggleVoiceDrive} aria-label="Stop driving by voice">
+      <span className="vd-head"><i className="vd-dot" />{status || "Listening"}</span>
+      <span className="vd-heard">{heard ? `“${heard}”` : "Say “chalo”, “tez”, “ruko”…"}</span>
+      <span className="mono vd-words">chalo · tez · dheere · ruko · left · right · pom pom · map{!coarse && " · B to stop"}</span>
     </button>
   );
 }
@@ -709,7 +755,7 @@ function Lightbox() {
 
 /* ---------- inside Competitions & Hackathons ---------- */
 
-type Shown = { title: string; kicker: string; blurb: string; facts: { n: string; l: string }[]; image?: string; nav?: { i: number; n: number }; actions: { label: string; run: () => void }[] };
+type Shown = { title: string; kicker: string; blurb: string; facts: { n: string; l: string }[]; call?: string; learned?: string; image?: string; nav?: { i: number; n: number }; actions: { label: string; run: () => void }[] };
 
 /** What's on the exhibit card right now; Enter runs its first action. */
 let current: Shown | null = null;
@@ -730,7 +776,7 @@ function describe(spot: Spot): Shown {
   }
   const e = EXHIBITS.find((x) => x.id === spot.exhibit)!;
   return {
-    title: e.name, kicker: e.kicker, blurb: e.blurb, facts: e.facts,
+    title: e.name, kicker: e.kicker, blurb: e.blurb, facts: e.facts, call: e.call, learned: e.learned,
     actions: e.links.map((l) => ({ label: l.label, run: () => (l.embed ? ui.set({ embed: l.url }) : window.open(l.url, "_blank", "noopener")) })),
   };
 }
@@ -761,6 +807,12 @@ function ExhibitCard() {
             <p className="mono label">{shown.data.kicker}</p>
             <h3>{shown.data.title}</h3>
             <p className="exhibit-blurb">{shown.data.blurb}</p>
+            {(shown.data.call || shown.data.learned) && (
+              <dl className="exhibit-notes">
+                {shown.data.call && <><dt className="mono">The call</dt><dd>{shown.data.call}</dd></>}
+                {shown.data.learned && <><dt className="mono">What I learned</dt><dd>{shown.data.learned}</dd></>}
+              </dl>
+            )}
             {shown.data.facts.length > 0 && (
               <div className="exhibit-facts">{shown.data.facts.map((f) => <span key={f.l}><b>{f.n}</b>{f.l}</span>)}</div>
             )}
@@ -844,6 +896,7 @@ const CREDITS: [string, string][] = [
   ["Hackathon", "Sarvam AI · 2nd place · an agent in 45 minutes"],
   ["Favourite films", "Fight Club · Memories of Murder · Predestination · The Wailing"],
   ["Filmed on location", "Agra · Kanpur · Gurgaon · Bengaluru"],
+  ["Available", "From November · full-time · ready to move to Bengaluru"],
   ["Dialogue", "Spoken, not typed, with Wispr Flow"],
   ["Catering", "Every chai tapri on the way"],
 ];

@@ -7,7 +7,8 @@ import { cue, ui, walker } from "./game/store";
 import { stepDeck } from "./game/hall";
 import { startMusic } from "./game/music";
 import { EMOTES, toggleAuto } from "./game/Player";
-import { beginRide, exhibitAction, lightboxKey, Overlay, resetToRoad } from "./ui/Overlay";
+import { beginRide, exhibitAction, lightboxKey, Overlay, resetToRoad, voiceDriveNow } from "./ui/Overlay";
+import { toggleVoiceDrive } from "./game/voiceDrive";
 import { GUEST } from "./game/guest";
 
 if (GUEST) document.title = `Mukund ki Auto · for ${GUEST}`;
@@ -17,6 +18,7 @@ const Scene = lazy(() => import("./game/Scene"));
 export default function App() {
   useEffect(() => bindKeyboard((code, down) => {
     const s = ui.get();
+    if (down && code === "KeyB" && s.ready && s.phase !== "finale") { if (s.voiceDrive) toggleVoiceDrive(); else voiceDriveNow(); return; }
     if (s.phase === "intro") {
       if (down && code === "Enter" && s.ready) beginRide(false);
       return;

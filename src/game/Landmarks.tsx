@@ -1177,6 +1177,8 @@ function billboardTexture() {
     g.fillText(`${ME.name} · Growth, India`, textX, 310);
     g.font = "italic 32px Georgia, serif"; g.fillStyle = "#5d4037";
     g.fillText("This whole ride was built by voice.", textX, 380);
+    g.font = "bold 30px Georgia, serif"; g.fillStyle = "#ff3d00";
+    g.fillText("Can start in November · Bengaluru", textX, 440);
     tex.needsUpdate = true;
   };
   draw();
