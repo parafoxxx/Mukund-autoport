@@ -3,12 +3,11 @@ import { bindKeyboard } from "./game/input";
 import { closeStop } from "./game/Director";
 import { horn, probeVoices, setMuted, wakeAudio } from "./game/sound";
 import { VOICE_IDS } from "./content";
-import { stopListening } from "./game/voice";
 import { cue, ui, walker } from "./game/store";
 import { stepDeck } from "./game/hall";
 import { startMusic } from "./game/music";
 import { EMOTES, toggleAuto } from "./game/Player";
-import { beginRide, exhibitAction, lightboxKey, Overlay, resetToRoad, talkToDriver } from "./ui/Overlay";
+import { beginRide, exhibitAction, lightboxKey, Overlay, resetToRoad } from "./ui/Overlay";
 import { GUEST } from "./game/guest";
 
 if (GUEST) document.title = `Mukund ki Auto · for ${GUEST}`;
@@ -22,13 +21,12 @@ export default function App() {
       if (down && code === "Enter" && s.ready) beginRide(false);
       return;
     }
-    if (!down) { if (code === "KeyV") stopListening(); return; }
+    if (!down) return;
     if (code === "KeyM" && s.phase === "ride") { ui.set({ mapOpen: !s.mapOpen }); return; }
     if (s.mapOpen) { if (code === "Escape") ui.set({ mapOpen: false }); return; }
     if (s.lightbox) { lightboxKey(code); return; }
     if (s.embed) { if (code === "Escape") ui.set({ embed: null }); return; }
     if (code === "KeyH") horn();
-    if (code === "KeyV" && !s.listening) talkToDriver();
     if (code === "KeyR" && s.phase === "ride") resetToRoad();
     if (code === "Enter" && s.onFoot && s.active === null && exhibitAction()) return;
     // at the deck wall: left/right step to the neighbouring deck

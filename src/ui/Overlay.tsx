@@ -4,16 +4,13 @@ import { useProgress } from "@react-three/drei";
 import { CHAPTER_COUNT_WORD, DECKS, EXHIBITS, ME, STOPS } from "../content";
 import { inHall, spotNear, stepDeck, type Spot } from "../game/hall";
 import { FIRST, GUEST } from "../game/guest";
-import { startVoiceDrive } from "../game/voiceDrive";
 import { bubbleAnchor, cue, sim, ui, useUI, walker } from "../game/store";
 import { closeStop, readTime, startExpress } from "../game/Director";
 import { input } from "../game/input";
-import { audioRunning, babble, clack, horn, setMuted, startEngine, voiceDuration, wakeAudio } from "../game/sound";
-import { listenOnce, parse, stopListening, voiceSupported } from "../game/voice";
+import { audioRunning, babble, clack, setMuted, startEngine, voiceDuration, wakeAudio } from "../game/sound";
 import { nearestSample, roadHeading, SAMPLES } from "../game/track";
 import { board, EMOTES, nearAuto, placeWalkerAtStart, toggleAuto, walkerToRoad } from "../game/Player";
-import { askMukund } from "../game/chat";
-import { IconArrow, IconBolt, IconHelp, IconLink, IconMap, IconMic, IconPlay, IconReset, IconSound, IconTrophy } from "./icons";
+import { IconArrow, IconBolt, IconHelp, IconLink, IconMap, IconPlay, IconReset, IconSound, IconTrophy } from "./icons";
 import { BADGES } from "../game/achievements";
 import { RouteMap } from "./RouteMap";
 import { MiniMap } from "./MiniMap";
@@ -36,32 +33,6 @@ export function beginRide(express: boolean) {
   // the express cut is a guided tour in the auto; otherwise he starts on foot beside it
   if (express) ui.set({ phase: "ride", express: true, target: 0, coach: "done", onFoot: false, boarded: true });
   else ui.set({ phase: "ride", coach: coachedBefore() ? "done" : "drive", onFoot: true });
-}
-
-/** Drive by voice from anywhere: starts the ride if needed. */
-export function voiceDriveNow() {
-  if (ui.get().phase === "intro") beginRide(false);
-  startVoiceDrive();
-}
-
-export async function talkToDriver() {
-  if (!voiceSupported) { ui.set({ reply: "Voice needs Chrome, Edge or Safari. Tap a chapter on the route instead." }); return; }
-  if (ui.get().listening) { stopListening(); return; }
-  if (ui.get().voiceDrive) return; // the voice-drive mic is already listening, questions included
-  if (ui.get().phase === "intro") beginRide(false);
-  ui.set({ listening: true, heard: "", reply: "" });
-  const text = await listenOnce((t) => ui.set({ heard: t }));
-  const cmd = parse(text);
-  const coach = ui.get().coach === "voice" ? "done" : ui.get().coach;
-  if (!text) { ui.set({ listening: false, heard: "", reply: "Didn't catch that. Hold V and speak.", coach }); return; }
-  // short driving orders ("Chill Hai chalo") steer the auto; anything else is a conversation with him
-  const order = cmd.kind !== "none" && (cmd.kind !== "go" || /(chalo|chal|le chalo|go to|take me|drive|jaana|jana)/i.test(text));
-  if (!order) { ui.set({ listening: false, heard: text, reply: "", coach }); askMukund(text); return; }
-  let reply = "";
-  if (cmd.kind === "go") { board(); closeStop(); ui.set({ target: cmd.stop, express: false }); reply = `Chalo! Heading to ${STOPS[cmd.stop].name}.`; }
-  else if (cmd.kind === "express") { startExpress(); reply = "Poora tour. Sit back."; }
-  else if (cmd.kind === "horn") { horn(); reply = "Pom pom."; }
-  ui.set({ listening: false, heard: text, reply, coach });
 }
 
 export function resetToRoad() {
@@ -305,7 +276,7 @@ function TitleSequence() {
           <motion.div className="controls mono" {...up(1.85)}>
             <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> drive</span>
             <span><kbd>F</kbd> get in / out</span>
-            <span><kbd>V</kbd> talk to Mukund</span>
+            <span><kbd>M</kbd> map</span>
             <span><kbd>H</kbd> horn</span>
           </motion.div>
         )}
@@ -325,7 +296,7 @@ function Hud({ hidden }: { hidden: boolean }) {
       <div className="hud-tr"><Controls /></div>
       <div className="hud-bl"><MiniMap /></div>
       <div className="hud-bc"><Hint /><Moves /><Route /></div>
-      <div className="hud-br"><AutoPill /><VoicePill /></div>
+      <div className="hud-br"><AutoPill /><ReplyBubble /></div>
       {coarse && <TouchPad />}
     </motion.div>
   );
@@ -471,7 +442,6 @@ function Controls() {
               <li><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span>Walk, or drive the auto</li>
               <li><span><kbd>F</kbd><kbd>↵</kbd></span>Get in / out of the auto</li>
               <li><span><kbd>1</kbd>–<kbd>9</kbd></span>His moves (on foot)</li>
-              <li><span><kbd>V</kbd></span>Hold and talk to Mukund, or say “Chill Hai chalo”</li>
               <li><span><kbd>M</kbd></span>Route map: jump to any chapter</li>
               <li><span><kbd>H</kbd></span>Horn (cows have opinions)</li>
               <li><span><kbd>Space</kbd></span>Continue a chapter</li>
@@ -553,7 +523,7 @@ function Hint() {
   if (offroad) text = coarse ? "Off-road. Tap ↺ to hop back on." : "Off-road. Press R to hop back on.";
   else if (active === null && coach === "drive" && boarded) text = coarse ? "Hold ▲ to walk. Tap “Hop in” to drive." : "W A S D to walk or drive · F to get in and out.";
   else if (active === null && coach === "follow") text = "Follow the chevron to the next milestone.";
-  else if (active === null && coach === "voice") text = coarse ? "Tap “Talk to Mukund” and ask him anything." : "Hold V and ask Mukund anything. He answers in his own voice.";
+  else if (active === null && coach === "voice") text = coarse ? "Tap Map to jump to any chapter." : "Press M for the map: jump to any chapter.";
   return (
     <AnimatePresence mode="wait">
       {text && <motion.p key={text} className="hint" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.35 }}>{text}</motion.p>}
@@ -577,26 +547,18 @@ function AutoPill() {
   );
 }
 
-function VoicePill() {
-  const listening = useUI((s) => s.listening);
-  const heard = useUI((s) => s.heard);
+/** Short lines from the game ("Pehle rukne do!"), shown for a few seconds. */
+function ReplyBubble() {
   const reply = useUI((s) => s.reply);
-  const thinking = useUI((s) => s.thinking);
-  const [showReply, setShowReply] = useState(false);
+  const [shown, setShown] = useState(false);
   useEffect(() => {
-    if (!reply || listening) return;
-    setShowReply(true);
-    const t = setTimeout(() => setShowReply(false), 4000);
+    if (!reply) return;
+    setShown(true);
+    const t = setTimeout(() => setShown(false), 4000);
     return () => clearTimeout(t);
-  }, [reply, listening]);
-  const text = listening ? heard || "Listening…" : thinking ? "Mukund is thinking…" : showReply ? reply : "Talk to Mukund";
-  return (
-    <motion.button layout className={"voice" + (listening ? " on" : "") + (showReply ? " said" : "")} onClick={talkToDriver} aria-label="Talk to Mukund">
-      <span className="voice-ic">{listening ? <span className="wave">{Array.from({ length: 7 }, (_, i) => <i key={i} style={{ animationDelay: `${i * 0.09}s` }} />)}</span> : <IconMic />}</span>
-      <motion.span layout="position" className="voice-txt">{listening && heard ? `“${text}”` : text}</motion.span>
-      {!listening && !showReply && !coarse && <kbd>V</kbd>}
-    </motion.button>
-  );
+  }, [reply]);
+  if (!shown) return null;
+  return <div className="voice said" role="status"><span className="voice-txt">{reply}</span></div>;
 }
 
 function TouchPad() {
