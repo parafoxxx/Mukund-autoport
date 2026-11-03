@@ -16,7 +16,7 @@ function overLimit(ip: string) {
 
 // words we want Sarvam to catch: the driving commands and the chapter names
 const KEYTERMS = [
-  "chalo", "tez", "dheere", "ruko", "left", "right", "peeche", "pom pom", "le chalo", "Mukund",
+  "move", "chalo", "tez", "dheere", "ruko", "left", "right", "peeche", "pom pom", "le chalo", "Mukund",
   ...STOPS.map((s) => s.name),
 ].slice(0, 50);
 

@@ -1,6 +1,6 @@
 /**
  * Drive by voice: an always-on mic that turns spoken words into driving, word by word as you say them.
- * "chalo" to go, "tez" faster, "dheere" slower, "ruko" stop, "left" / "right", "peeche" back, "pom pom" to honk,
+ * "move" (or "chalo") to go, "tez" faster, "dheere" slower, "ruko" stop, "left" / "right", "peeche" back, "pom pom" to honk,
  * "Chill Hai le chalo" to head to a chapter, and anything you ask Mukund goes to him.
  *
  * Two ears. First choice: record each phrase and transcribe it on the server (api/stt, Sarvam AI), which
@@ -36,7 +36,7 @@ export const voiceDriveSupported = Boolean(Ctor) || typeof MediaRecorder !== "un
 const CRUISE = 12, TOP = 21;
 // Indian-English recognisers spell Hindi words many ways, so each command lists the usual ones
 const WORDS: [RegExp, () => void][] = [
-  [/^(chalo|challo|chalu|charlo|chalein|chal|chalte|chello|go|start|drive|aage|aagey|age|forward|move|चलो|चल|आगे)$/, () => go()],
+  [/^(chalo|challo|chalu|charlo|chalein|chal|chalte|chello|go|start|drive|aage|aagey|age|forward|move|moves|moving|mood|moon|मूव|चलो|चल|आगे)$/, () => go()],
   [/^(tez|tej|tes|test|taze|fast|faster|speed|jaldi|jaldee|zoom|bhagao|तेज़|तेज|जल्दी)$/, () => { if (!started()) go(); sim.vd.speed = Math.min(TOP, Math.max(sim.vd.speed, CRUISE) + 5); }],
   [/^(dheere|dhire|dheeray|deere|slow|slower|aaram|araam|धीरे)$/, () => { sim.vd.speed = Math.max(5, sim.vd.speed - 5); }],
   [/^(ruko|ruk|roko|rook|rocco|rukho|stop|brake|break|bas|bus|hold|thamo|रुको|रुक|बस|स्टॉप)$/, () => { sim.vd.speed = 0; }],
@@ -57,7 +57,7 @@ function started() {
 
 function go() {
   const s = ui.get();
-  // in a chapter, "chalo" means "next"
+  // in a chapter, "move" (or "chalo") means "next"
   if (s.active !== null) { closeStop(); if (sim.vd.speed <= 0) sim.vd.speed = CRUISE; return; }
   started();
   if (sim.vd.speed <= 0) sim.vd.speed = CRUISE;
@@ -95,9 +95,9 @@ function onPhrase(text: string, hadCommand: boolean) {
   if (cmd.kind === "go" && TRIP.test(text)) return tripTo(cmd.stop);
   if (cmd.kind === "express") { startExpress(); return; }
   if (TRIP.test(text) && ANYWHERE.test(text)) return tripTo(ui.get().nextStop);
-  if (HELLO.test(text)) { ui.set({ reply: "Namaste! Bolo “chalo” and we’re off." }); return; }
+  if (HELLO.test(text)) { ui.set({ reply: "Namaste! Say “move” and we’re off." }); return; }
   // heard, but nothing to act on: say what it heard and what it understands, instead of doing nothing
-  if (!hadCommand) ui.set({ reply: `Heard “${text.replace(/[.!?]+$/, "")}”. Try “chalo”, “left”, “ruko”, or “take me to NoBroker”.` });
+  if (!hadCommand) ui.set({ reply: `Heard “${text.replace(/[.!?]+$/, "")}”. Try “move”, “left”, “ruko”, or “take me to NoBroker”.` });
 }
 
 const status = (voiceStatus: string) => ui.set({ voiceStatus });
@@ -138,7 +138,7 @@ function listen() {
   r.lang = lang; r.continuous = true; r.interimResults = true;
   const spent = new Map<number, number>(); // per result: how many words have already been acted on
   const commanded = new Set<number>();
-  r.onstart = () => status("Listening. Say “chalo”.");
+  r.onstart = () => status("Listening. Say “move”.");
   r.onresult = (e) => {
     failures = 0;
     for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -200,7 +200,7 @@ async function startServerEar() {
   let floor = 0.01, loudAt = 0, startedAt = 0, chunks: Blob[] = [];
   const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((m) => MediaRecorder.isTypeSupported(m)) ?? "";
   ear = { stream, ctx, timer: 0, recorder: null };
-  status("Listening. Say “chalo”.");
+  status("Listening. Say “move”.");
   // a simple voice detector: record from the first loud moment until 0.6 s of quiet (or 4 s)
   ear.timer = window.setInterval(() => {
     if (!ear) return;
@@ -249,7 +249,7 @@ async function transcribe(blob: Blob) {
     }
     serverMisses = 0;
     const { text } = (await r.json()) as { text?: string };
-    status("Listening. Say “chalo”.");
+    status("Listening. Say “move”.");
     if (!text) return;
     const words = text.split(/\s+/).filter(Boolean);
     ui.set({ voiceHeard: words.slice(-6).join(" ") });
