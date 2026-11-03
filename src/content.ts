@@ -14,7 +14,7 @@ export const ME = {
     instagram: "https://www.instagram.com/mvkndd/",
     letterboxd: "https://letterboxd.com/mvkndd",
     spotify: "https://open.spotify.com/user/31sib4fwtzfjvjaneamdotpquziu",
-    video: "#", // your 3-minute build video
+    video: "https://drive.google.com/file/d/149vbKqxgQWpGQynVWZD9IRx5LN8mSmCI/view?usp=sharing", // the 3-minute build video
   },
   // The oddly specific $3,000 setup request, as it appears in the end credits.
   setup: {
