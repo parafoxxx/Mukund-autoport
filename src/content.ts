@@ -16,10 +16,10 @@ export const ME = {
     spotify: "https://open.spotify.com/user/31sib4fwtzfjvjaneamdotpquziu",
     video: "#", // your 3-minute build video
   },
-  // Your oddly specific $3,000 setup request. TODO: make it yours.
+  // The oddly specific $3,000 setup request, as it appears in the end credits.
   setup: {
-    item: "A projector + a pair of noise-cancelling headphones",
-    why: "One for movie nights with the team, one for deep work in a loud office. Both, somehow, make me more productive.",
+    item: "A standing desk, with a little auto-rickshaw parked on it (real horn included)",
+    why: "I stand for every creator and partner call, and I honk every time a growth number moves. I built one auto to get here. This one lives on my desk.",
   },
 };
 
