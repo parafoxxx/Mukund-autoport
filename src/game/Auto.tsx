@@ -220,7 +220,7 @@ function posterTexture() {
   for (let k = 0; k < 24; k++) { g.rotate(Math.PI / 12); g.fillStyle = k % 2 ? "rgba(255, 61, 0, 0.16)" : "rgba(255, 181, 71, 0.08)"; g.beginPath(); g.moveTo(0, 0); g.lineTo(-90, -700); g.lineTo(90, -700); g.fill(); }
   g.restore();
   g.textAlign = "center"; g.textBaseline = "middle";
-  g.fillStyle = "#ffb547"; g.font = "bold 40px monospace"; g.fillText("★  IF YOU HIRE ME  ★", W / 2, 70);
+  g.fillStyle = "#ffb547"; g.font = "bold 40px monospace"; g.fillText("★  IF YOU HIRE ME  ★", W / 2, 76);
   g.fillStyle = "#fff4dc"; g.font = "bold 64px monospace"; g.fillText("MY FIRST 90 DAYS AT", W / 2, 150, W - 70);
   g.fillStyle = "#ff5a1f"; g.font = "italic bold 124px Georgia, serif"; g.fillText("Wispr Flow India", W / 2, 262, W - 70);
   const colors = ["#e4007c", "#1e88e5", "#00a884"], labels = ["CREATORS", "CAMPUSES", "PRICING"];
@@ -235,14 +235,32 @@ function posterTexture() {
   return t;
 }
 
+/** The outline of the auto's rear canvas: flat along the yellow stripe, rounded over the top like the hood. */
+function canvasShape(w: number, h: number, top: number, bottom: number) {
+  const x = w / 2, s = new THREE.Shape();
+  s.moveTo(-x + bottom, 0);
+  s.lineTo(x - bottom, 0); s.quadraticCurveTo(x, 0, x, bottom);
+  s.lineTo(x, h - top); s.bezierCurveTo(x, h - top * 0.35, x - top * 0.35, h, x - top, h);
+  s.lineTo(-x + top, h); s.bezierCurveTo(-x + top * 0.35, h, -x, h - top * 0.35, -x, h - top);
+  s.lineTo(-x, bottom); s.quadraticCurveTo(-x, 0, -x + bottom, 0);
+  const g = new THREE.ShapeGeometry(s, 24);
+  // map the texture across the whole outline, 0..1 each way
+  const pos = g.attributes.position, uv = g.attributes.uv;
+  for (let i = 0; i < pos.count; i++) uv.setXY(i, (pos.getX(i) + x) / w, pos.getY(i) / h);
+  uv.needsUpdate = true;
+  return g;
+}
+const POSTER = canvasShape(1.4, 0.84, 0.3, 0.03);
+const POSTER_RIM = canvasShape(1.46, 0.88, 0.32, 0.04);
+
 function BackPoster() {
   const map = useMemo(posterTexture, []);
   const hover = (on: boolean) => { document.body.style.cursor = on ? "pointer" : ""; };
   return (
-    <group position={[0, 1.53, -1.47]} rotation-y={Math.PI}
-      onClick={(e) => { e.stopPropagation(); ui.set({ plan: 0 }); }} onPointerOver={() => hover(true)} onPointerOut={() => hover(false)}>
-      <mesh position-z={-0.004}><planeGeometry args={[1.42, 0.86]} /><meshStandardMaterial color="#e5bd63" metalness={0.5} roughness={0.4} /></mesh>
-      <mesh><planeGeometry args={[1.36, 0.8]} /><meshStandardMaterial map={map} emissiveMap={map} emissive="#ffffff" emissiveIntensity={0.42} roughness={0.55} /></mesh>
+    <group position={[0, 1.105, -1.47]} rotation-y={Math.PI}
+      onClick={(e) => { e.stopPropagation(); ui.set({ plan: 0, planNote: true }); }} onPointerOver={() => hover(true)} onPointerOut={() => hover(false)}>
+      <mesh geometry={POSTER_RIM} position={[0, -0.02, -0.004]}><meshStandardMaterial color="#e5bd63" metalness={0.5} roughness={0.4} /></mesh>
+      <mesh geometry={POSTER}><meshStandardMaterial map={map} emissiveMap={map} emissive="#ffffff" emissiveIntensity={0.42} roughness={0.55} /></mesh>
     </group>
   );
 }
@@ -502,6 +520,7 @@ export function CameraRig() {
     const lean = kind === "chase" ? -sim.steer * THREE.MathUtils.clamp(sim.speed / MAX_ROAD, -1, 1) * 0.07 : 0;
     roll.current += (lean - roll.current) * Math.min(1, dt * 4);
     cam.rotateZ(roll.current);
+    if (kind === "chase" && s.phase === "ride" && !s.onFoot && s.active === null) sim.posterSeen += dt; // impressions served
     const fov = kind === "driveby" ? 34 : kind === "drone" ? 50 : fovFor(s.active, s.onFoot ? walker.speed : sim.speed);
     if (Math.abs(cam.fov - fov) > 0.05) { cam.fov += (fov - cam.fov) * 0.06; cam.updateProjectionMatrix(); }
   });

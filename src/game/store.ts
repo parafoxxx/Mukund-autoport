@@ -32,6 +32,7 @@ type UIState = {
   lightbox: { stop: number; index: number } | null; // a chapter photo open full screen
   embed: string | null;    // a live page (the Meesho prototype) open in a window inside the ride
   plan: number | null;     // one of the plan's ideas, opened from its pitch board by the road
+  planNote: boolean;       // it was opened from the poster on the auto: he has something to say about that
   boarded: boolean;        // has got into the auto at least once this ride (until then, we nudge)
   voiceStatus: string;     // what the voice-drive mic is up to, or what's wrong with it
   voiceDrive: boolean;     // hands-free: driving by voice commands
@@ -47,7 +48,7 @@ let state: UIState = {
   phase: "intro", active: null, visited: [], target: null, express: false,
   nextStop: 1, distance: 0, kmh: 0, km: 0, muted: false, heard: "", reply: "", listening: false,
   offroad: false, coach: "drive", ready: false, avatarReady: false, quip: "", quipId: 0, quipVoice: "",
-  onFoot: true, mapOpen: false, profile: false, badgesOpen: false, lightbox: null, embed: null, plan: null, boarded: false, voiceStatus: "", voiceDrive: false, voiceHeard: "",
+  onFoot: true, mapOpen: false, profile: false, badgesOpen: false, lightbox: null, embed: null, plan: null, planNote: false, boarded: false, voiceStatus: "", voiceDrive: false, voiceHeard: "",
   badges: [], toast: { title: "", sub: "", n: 0 }, coins: 0, smashed: 0,
 };
 
@@ -93,6 +94,7 @@ export const sim = {
   talk: 0,            // 0..1 how hard Mukund is talking right now (voice or speech-bubble babble)
   act: "talk" as Act, // what the avatar is performing, so the camera can frame it
   honks: 0,           // bumps on every horn press, so cows and traffic can react
+  posterSeen: 0,      // seconds the chase camera has spent looking at the poster on the auto's back
   airStart: -1,       // seconds in the air on the current jump, -1 when grounded
   vd: { speed: 0, steer: 0, steerT: 0 }, // voice driving: target speed (m/s, <0 reverses) and a timed turn
   cue: { act: "talk" as Act, n: 0 }, // an act requested from outside (AI reply, emote key); n bumps on every request

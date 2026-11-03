@@ -1003,6 +1003,7 @@ const PLAN_TINT = ["#e4007c", "#1e88e5", "#00a884"];
 export function planKey(code: string) {
   const k = ui.get().plan;
   if (k === null) return false;
+  if (ui.get().planNote && code !== "Escape") { if (code === "Enter" || code === "Space" || code === "ArrowRight") ui.set({ planNote: false }); return true; }
   if (code === "Escape" || code === "Space" || code === "Enter") ui.set({ plan: null });
   const step = code === "ArrowRight" || code === "KeyD" ? 1 : code === "ArrowLeft" || code === "KeyA" ? -1 : 0;
   if (step) ui.set({ plan: (k + step + WISPR_PLAN.ideas.length) % WISPR_PLAN.ideas.length });
@@ -1015,8 +1016,26 @@ function PlanIcon({ k }: { k: number }) {
   if (k === 1) return <svg viewBox="0 0 24 24" {...s}><path d="M2 9l10-5 10 5-10 5z" /><path d="M6 11.2V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-4.8" /><path d="M22 9v5" /></svg>;
   return <svg viewBox="0 0 24 24" {...s}><path d="M3 12V4.5A1.5 1.5 0 014.5 3H12l9 9-9 9z" /><path d="M8 7.5h5M8 10h5M11 10c0 2-1.5 3-3 3l4 3.5" /></svg>;
 }
+/** Opened from the poster on his own auto: he turns to the camera and explains himself. */
+function PosterNote({ onNext }: { onNext: () => void }) {
+  const secs = Math.round(sim.posterSeen);
+  const seen = secs >= 60 ? `${Math.floor(secs / 60)} min ${secs % 60} s` : `${secs} second${secs === 1 ? "" : "s"}`;
+  return (
+    <motion.aside key="note" className="poster-note" initial={{ opacity: 0, rotate: 8, y: 40, scale: 0.9 }} animate={{ opacity: 1, rotate: -2, y: 0, scale: 1 }} exit={{ opacity: 0, rotate: -8, y: -30, transition: { duration: 0.25 } }} transition={{ type: "spring", stiffness: 180, damping: 16 }} onClick={(e) => e.stopPropagation()}>
+      <p className="mono">Psst. Yes, you. The one behind the auto.</p>
+      <p>Why is my growth plan on the back of an auto? Because the back of an auto is India's most-watched billboard. Nobody chooses to look at it. Everyone stuck behind one reads every word anyway.</p>
+      {secs >= 45
+        ? <p>And you've been stuck behind this one the whole ride: <b>{seen}</b> of it, by my count. ₹0 media spend, 100% viewability, an audience of exactly the one person I wanted. Same playbook as Chill Hai.</p>
+        : <p>You've been behind this one for <b>{seen}</b> and you already tapped it. That's a 100% click-through rate. ₹0 media spend, an audience of exactly the one person I wanted. Same playbook as Chill Hai.</p>}
+      <p className="pn-sign">Yes, I tracked that. It's a growth role. — Mukund</p>
+      <button className="btn-primary sm pn-next" onClick={onNext} autoFocus>Fine. Show me the plan<IconArrow dir="right" /></button>
+    </motion.aside>
+  );
+}
+
 function PlanCard() {
   const k = useUI((s) => s.plan);
+  const noteUp = useUI((s) => s.planNote); // opened from the poster: his note first, then the cards
   const n = WISPR_PLAN.ideas.length;
   const go = (j: number) => ui.set({ plan: (j + n) % n });
   return (
@@ -1024,6 +1043,8 @@ function PlanCard() {
       {k !== null && (
         <motion.div className="plan-deck" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.25 } }} onClick={() => ui.set({ plan: null })} role="dialog" aria-label="My first 90 days at Wispr Flow India">
           <div className="plan-burst" aria-hidden />
+          <AnimatePresence>{noteUp && <PosterNote onNext={() => ui.set({ planNote: false })} />}</AnimatePresence>
+          {!noteUp && <>
           <motion.header className="plan-head" initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE }} onClick={(e) => e.stopPropagation()}>
             <p className="mono">★ If you hire me · my first 90 days ★</p>
             <h2>India is <em>#2</em> by users.<br />A small slice of revenue.</h2>
@@ -1060,6 +1081,7 @@ function PlanCard() {
             <button className="ibtn" onClick={() => go(k + 1)} aria-label="Next idea"><IconArrow dir="right" /></button>
             <button className="btn-primary sm" onClick={() => ui.set({ plan: null })}>Back to the road{!coarse && <kbd>Esc</kbd>}</button>
           </motion.footer>
+          </>}
         </motion.div>
       )}
     </AnimatePresence>

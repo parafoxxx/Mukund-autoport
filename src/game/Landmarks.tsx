@@ -1431,7 +1431,7 @@ function PitchBoard({ k }: { k: number }) {
       {[-1, 1].map((s) => <mesh key={s} position={[s * 1.25, 2.6, 0.25]} rotation-z={s * -0.06} castShadow><boxGeometry args={[0.14, 5.2, 0.14]} />{wood}</mesh>)}
       <mesh position={[0, 2.5, -0.75]} rotation-x={0.28} castShadow><boxGeometry args={[0.12, 5.1, 0.12]} />{wood}</mesh>
       <mesh position={[0, 1.15, 0.36]}><boxGeometry args={[3.0, 0.12, 0.3]} />{wood}</mesh>
-      <group ref={face} onClick={(e) => { e.stopPropagation(); ui.set({ plan: k }); }} onPointerOver={() => { hover.current = true; pointer(true); }} onPointerOut={() => { hover.current = false; pointer(false); }}>
+      <group ref={face} onClick={(e) => { e.stopPropagation(); ui.set({ plan: k, planNote: false }); }} onPointerOver={() => { hover.current = true; pointer(true); }} onPointerOut={() => { hover.current = false; pointer(false); }}>
         <mesh position={[0, 1.2 + H / 2, 0.36]} castShadow><boxGeometry args={[W + 0.16, H + 0.16, 0.08]} /><meshStandardMaterial color={color} roughness={0.6} /></mesh>
         <mesh position={[0, 1.2 + H / 2, 0.41]}><planeGeometry args={[W, H]} /><meshStandardMaterial map={map} emissiveMap={map} emissive="#ffffff" emissiveIntensity={0.32} roughness={0.75} /></mesh>
       </group>
