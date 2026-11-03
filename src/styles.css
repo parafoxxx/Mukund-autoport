@@ -628,3 +628,16 @@ kbd {
 .plink-linkedin i { background: #0a66c2; } .plink-github i { background: #171515; } .plink-instagram i { background: linear-gradient(45deg, #feda75, #fa7e1e, #d62976, #4f5bd5); }
 .plink-letterboxd i { background: conic-gradient(#ff8000 0 33%, #00e054 0 66%, #40bcf4 0); } .plink-email i { background: #e8902a; }
 @media (max-width: 760px) { .profile { top: auto; bottom: 24px; transform: none; left: 16px; right: 16px; max-width: none; } }
+
+/* ---------- title screen: the "click me" tag beside him ---------- */
+.avatar-prompt-anchor { position: fixed; left: 0; top: 0; z-index: 28; pointer-events: none; will-change: transform; }
+.avatar-prompt { pointer-events: auto; display: inline-flex; align-items: center; gap: 9px; height: 38px; padding: 0 15px 0 8px; border-radius: 999px; border: 1px solid rgba(255, 181, 71, 0.55);
+  background: rgba(20, 16, 12, 0.78); backdrop-filter: blur(8px); color: var(--paper); font: 400 13.5px var(--sans); white-space: nowrap; cursor: pointer; box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35); }
+.avatar-prompt b { color: var(--saffron); font-weight: 600; }
+.avatar-prompt:hover { border-color: var(--saffron); }
+.ap-arrow { display: inline-flex; color: var(--saffron); animation: apnudge 1.3s ease-in-out infinite; }
+.ap-arrow svg { width: 16px; height: 16px; }
+@keyframes apnudge { 50% { transform: translateX(-4px); } }
+.ap-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--saffron); box-shadow: 0 0 0 0 rgba(255, 181, 71, 0.6); animation: appulse 1.6s ease-out infinite; }
+@keyframes appulse { 70% { box-shadow: 0 0 0 9px rgba(255, 181, 71, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 181, 71, 0); } }
+@media (prefers-reduced-motion: reduce) { .ap-arrow, .ap-dot { animation: none; } }

@@ -94,8 +94,52 @@ export function Overlay() {
       <Chapter />
       <Bubble />
       <AnimatePresence>{phase === "finale" && <Credits key="credits" />}</AnimatePresence>
+      <AvatarPrompt />
       <Loader />
     </>
+  );
+}
+
+/* ---------- title screen: a tag beside him that says he's clickable, until you've clicked ---------- */
+let garlandSeen = false;
+function AvatarPrompt() {
+  const phase = useUI((s) => s.phase);
+  const ready = useUI((s) => s.ready && s.avatarReady);
+  const profile = useUI((s) => s.profile);
+  const box = useRef<HTMLDivElement>(null);
+  const [late, setLate] = useState(false);
+  useEffect(() => { if (profile) garlandSeen = true; }, [profile]);
+  useEffect(() => { const t = setTimeout(() => setLate(true), 2400); return () => clearTimeout(t); }, []);
+  const show = phase === "intro" && ready && late && !profile && !garlandSeen;
+  // ride along beside his head
+  useEffect(() => {
+    if (!show) return;
+    let raf = 0;
+    const tick = () => {
+      const el = box.current;
+      if (el) {
+        const x = Math.min(innerWidth - 200, bubbleAnchor.x + 46);
+        el.style.transform = `translate(${x}px, ${bubbleAnchor.y + 64}px)`;
+        el.style.visibility = bubbleAnchor.visible ? "visible" : "hidden";
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [show]);
+  return (
+    <div ref={box} className="avatar-prompt-anchor">
+      <AnimatePresence>
+        {show && (
+          <motion.button className="avatar-prompt" onClick={() => ui.set({ profile: true })}
+            initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8, transition: { duration: 0.2 } }} transition={{ duration: 0.5, ease: EASE }}>
+            <span className="ap-arrow" aria-hidden><IconArrow dir="left" /></span>
+            <span className="ap-dot" aria-hidden />
+            <span><b>{coarse ? "Tap me" : "Click me"}</b> · my links are here</span>
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -296,7 +340,6 @@ function TitleSequence() {
       <div className="title-scrim" />
       <AnimatePresence>{profile && <ProfileCard key="profile" />}</AnimatePresence>
       <div className={"title-body" + (profile ? " away" : "")}>
-        {coarse && <motion.p className="mono click-hint inline" {...up(2.6)}>Psst · tap Mukund. He's wearing his links.</motion.p>}
         <motion.p className="mono eyebrow" {...up(0.2)}>A film by {ME.name}{GUEST && <> · made for {GUEST}</>}</motion.p>
         <motion.h1 className="film-title" initial={{ opacity: 0, clipPath: "inset(0 100% 0 0)" }} animate={{ opacity: 1, clipPath: "inset(0 0% 0 0)" }} transition={{ duration: 1.4, delay: 0.45, ease: EASE }}>
           Mukund ki <em>Auto</em>
@@ -332,7 +375,6 @@ function TitleSequence() {
           </motion.div>
         )}
       </div>
-      {!coarse && !profile && <motion.p className="mono click-hint" {...up(2.6)}>Psst · click Mukund. He's wearing his links.</motion.p>}
       {!profile && <motion.p className="mono title-credit" {...up(2.1)}>Written &amp; directed by voice · Wispr Flow · sound on</motion.p>}
     </motion.div>
   );
