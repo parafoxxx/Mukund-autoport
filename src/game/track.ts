@@ -135,6 +135,33 @@ STOPS.forEach((s, i) => {
   }
 });
 
+/** The road into the last stop: a banner over it, then three pitch boards, one per idea in the plan for Wispr India.
+ *  All of it fits in the stretch after the second-last chapter, on whichever side has room, angled toward the traffic. */
+export const PLAN_ROAD = (() => {
+  const last = STOPS.length - 1, L = CURVE.getLength();
+  const gap = (STOP_U[last] - STOP_U[last - 1]) * L; // metres of road between the last two chapters
+  const frame = (back: number) => {
+    const u = Math.max(0, STOP_U[last] - back / L), at = CURVE.getPointAt(u), h = roadHeading(u);
+    return { at: new THREE.Vector3(at.x, 0, at.z), h, right: new THREE.Vector3(Math.cos(h), 0, -Math.sin(h)) };
+  };
+  const clearance = (pos: THREE.Vector3) => Math.min(...COLLIDERS.map((c) => Math.hypot(c.x - pos.x, c.z - pos.z) - c.r));
+  const spots = [0.66, 0.47, 0.28].map((f) => frame(gap * f));
+  const sideRoom = (side: number) => Math.min(...spots.map((f) => clearance(f.at.clone().addScaledVector(f.right, side * (ROAD_HALF + 4.2)))));
+  const side = sideRoom(1) >= sideRoom(-1) ? 1 : -1;
+  const boards = spots.map((f) => {
+    const dir = f.right.clone().multiplyScalar(side);
+    const pos = f.at.clone().addScaledVector(dir, ROAD_HALF + 4.2);
+    // face the road, turned a little toward the traffic coming up from behind
+    const rotY = Math.atan2(-dir.x, -dir.z) - side * 0.42;
+    return { pos, rotY };
+  });
+  boards.forEach((b) => COLLIDERS.push({ x: b.pos.x, z: b.pos.z, r: 2.2 }));
+  const bf = frame(gap * 0.8);
+  const banner = { pos: bf.at, rotY: bf.h };
+  for (const k of [-1, 1]) { const q = bf.at.clone().addScaledVector(bf.right, k * (ROAD_HALF + 1.2)); COLLIDERS.push({ x: q.x, z: q.z, r: 0.5 }); }
+  return { boards, banner, gap };
+})();
+
 /** Ponds in the fields between chapters, clear of the road and the landmarks. Solid, so trees and grass keep out. */
 export const PONDS: { x: number; z: number; r: number; seed: number }[] = [];
 for (let i = 0; i < STOP_POS.length - 1; i += 2) {

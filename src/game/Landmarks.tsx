@@ -5,9 +5,9 @@ import * as THREE from "three";
 import { ConvexGeometry } from "three/examples/jsm/geometries/ConvexGeometry.js";
 import { FIRST } from "./guest";
 import { billboard, ui } from "./store";
-import { DECKS, EXHIBITS, ME, STOPS } from "../content";
+import { DECKS, EXHIBITS, ME, STOPS, WISPR_PLAN } from "../content";
 import { BOOTH, COLUMNS_Z, deckX, HALL } from "./hall";
-import { BESIDE, PLACEMENTS, ROAD_HALF, STOP_POS, STOP_U, rng, roadHeading } from "./track";
+import { BESIDE, PLAN_ROAD, PLACEMENTS, ROAD_HALF, STOP_POS, STOP_U, rng, roadHeading } from "./track";
 import { FONT_MONO, FONT_SERIF } from "./Roadside";
 
 const MARBLE = "#e8dcc6";
@@ -1372,6 +1372,103 @@ export function Landmarks() {
         }
         return <Placed key={s.id} i={i}><C /></Placed>;
       })}
+      <PlanRoad />
+    </group>
+  );
+}
+
+/* ---------- the road into the last stop: my first 90 days at Wispr Flow India ---------- */
+export const PLAN_COLORS = ["#e4007c", "#1e88e5", "#00a884"];
+
+function wrapText(g: CanvasRenderingContext2D, text: string, x: number, y: number, width: number, line: number) {
+  let row = "";
+  for (const w of text.split(" ")) {
+    if (row && g.measureText(row + w).width > width) { g.fillText(row.trim(), x, y); row = ""; y += line; }
+    row += w + " ";
+  }
+  g.fillText(row.trim(), x, y);
+  return y + line;
+}
+
+function pitchTexture(k: number) {
+  const idea = WISPR_PLAN.ideas[k], color = PLAN_COLORS[k];
+  const c = document.createElement("canvas"); c.width = 1024; c.height = 1440;
+  const g = c.getContext("2d")!;
+  g.fillStyle = "#fbf6ec"; g.fillRect(0, 0, 1024, 1440);
+  g.fillStyle = color; g.fillRect(0, 0, 1024, 210);
+  g.fillStyle = "rgba(255, 255, 255, 0.86)"; g.font = "bold 34px monospace"; g.textAlign = "left";
+  g.fillText(`${String(k + 1).padStart(2, "0")} / 03 · ${idea.tag.toUpperCase()}`, 70, 88);
+  g.fillStyle = "#ffffff"; g.font = "bold 30px monospace"; g.fillText("MY FIRST 90 DAYS · WISPR FLOW INDIA", 70, 150);
+  g.fillStyle = "#1a1208"; g.font = "64px Georgia, serif";
+  let y = wrapText(g, idea.title, 70, 320, 884, 76) + 20;
+  g.fillStyle = "#4a3b2c"; g.font = "38px sans-serif";
+  y = wrapText(g, idea.what, 70, y, 884, 54) + 30;
+  g.strokeStyle = "#e0d4bd"; g.lineWidth = 3; g.setLineDash([12, 10]); g.beginPath(); g.moveTo(70, y - 20); g.lineTo(954, y - 20); g.stroke(); g.setLineDash([]);
+  for (const [label, text] of [["MEASURE", idea.measure], ["WHY ME", idea.proof]] as const) {
+    y += 36; g.fillStyle = color; g.font = "bold 28px monospace"; g.fillText(label, 70, y);
+    y += 50; g.fillStyle = "#1a1208"; g.font = "36px sans-serif"; y = wrapText(g, text, 70, y, 884, 48);
+  }
+  g.fillStyle = color; g.fillRect(0, 1360, 1024, 80);
+  g.fillStyle = "#ffffff"; g.font = "bold 32px monospace"; g.textAlign = "center"; g.fillText("TAP TO READ  ↗", 512, 1412);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return t;
+}
+
+function PitchBoard({ k }: { k: number }) {
+  const map = useMemo(() => pitchTexture(k), [k]);
+  const lamp = useRef<THREE.MeshBasicMaterial>(null);
+  const face = useRef<THREE.Group>(null);
+  const hover = useRef(false);
+  useFrame(({ clock }) => {
+    if (lamp.current) lamp.current.opacity = 0.16 + Math.sin(clock.elapsedTime * 1.4 + k) * 0.03;
+    const f = face.current; if (f) f.position.z = THREE.MathUtils.lerp(f.position.z, hover.current ? 0.25 : 0, 0.15);
+  });
+  const W = 3.2, H = W * 1.406, color = PLAN_COLORS[k];
+  const wood = <meshStandardMaterial color="#5d4037" roughness={0.8} />;
+  return (
+    <group>
+      {/* an easel: two legs in front, one behind */}
+      {[-1, 1].map((s) => <mesh key={s} position={[s * 1.25, 2.6, 0.25]} rotation-z={s * -0.06} castShadow><boxGeometry args={[0.14, 5.2, 0.14]} />{wood}</mesh>)}
+      <mesh position={[0, 2.5, -0.75]} rotation-x={0.28} castShadow><boxGeometry args={[0.12, 5.1, 0.12]} />{wood}</mesh>
+      <mesh position={[0, 1.15, 0.36]}><boxGeometry args={[3.0, 0.12, 0.3]} />{wood}</mesh>
+      <group ref={face} onClick={(e) => { e.stopPropagation(); ui.set({ plan: k }); }} onPointerOver={() => { hover.current = true; pointer(true); }} onPointerOut={() => { hover.current = false; pointer(false); }}>
+        <mesh position={[0, 1.2 + H / 2, 0.36]} castShadow><boxGeometry args={[W + 0.16, H + 0.16, 0.08]} /><meshStandardMaterial color={color} roughness={0.6} /></mesh>
+        <mesh position={[0, 1.2 + H / 2, 0.41]}><planeGeometry args={[W, H]} /><meshStandardMaterial map={map} emissiveMap={map} emissive="#ffffff" emissiveIntensity={0.32} roughness={0.75} /></mesh>
+      </group>
+      {/* a little gallery lamp over it, and its glow */}
+      <mesh position={[0, 1.4 + H + 0.25, 0.75]} rotation-x={0.5}><cylinderGeometry args={[0.12, 0.2, 0.32, 14]} /><meshStandardMaterial color="#2b2b30" metalness={0.6} roughness={0.35} /></mesh>
+      <mesh position={[0, 1.2 + H / 2, 0.44]}><planeGeometry args={[W + 1.2, H + 1.0]} /><meshBasicMaterial ref={lamp} color="#fff2c6" transparent opacity={0.16} depthWrite={false} toneMapped={false} blending={THREE.AdditiveBlending} /></mesh>
+    </group>
+  );
+}
+
+function bannerCloth() {
+  const c = document.createElement("canvas"); c.width = 2048; c.height = 256;
+  const g = c.getContext("2d")!;
+  g.fillStyle = "#ff3d00"; g.fillRect(0, 0, 2048, 256);
+  g.fillStyle = "#fff4dc"; g.fillRect(0, 18, 2048, 6); g.fillRect(0, 232, 2048, 6);
+  g.textAlign = "center"; g.textBaseline = "middle";
+  g.fillStyle = "#fff4dc"; g.font = "bold 46px monospace"; g.fillText("IF YOU HIRE ME", 1024, 84);
+  g.font = "italic 92px Georgia, serif"; g.fillText("My first 90 days at Wispr Flow India  →", 1024, 168);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return t;
+}
+
+function PlanRoad() {
+  const cloth = useMemo(bannerCloth, []);
+  const flutter = useRef<THREE.Mesh>(null);
+  useFrame(({ clock }) => { if (flutter.current) flutter.current.rotation.x = Math.sin(clock.elapsedTime * 1.8) * 0.05; });
+  const { banner, boards } = PLAN_ROAD, span = (ROAD_HALF + 1.2) * 2;
+  return (
+    <group>
+      <group position={banner.pos} rotation-y={banner.rotY + Math.PI}>
+        {[-1, 1].map((k) => <mesh key={k} position={[k * span / 2, 3.6, 0]} castShadow><cylinderGeometry args={[0.12, 0.15, 7.2, 10]} /><meshStandardMaterial color="#8d6e63" roughness={0.8} /></mesh>)}
+        <mesh ref={flutter} position={[0, 6.1, 0]}>
+          <planeGeometry args={[span - 0.4, 1.4]} />
+          <meshStandardMaterial map={cloth} emissiveMap={cloth} emissive="#ffffff" emissiveIntensity={0.25} side={THREE.DoubleSide} roughness={0.9} />
+        </mesh>
+      </group>
+      {boards.map((b, k) => <group key={k} position={b.pos} rotation-y={b.rotY}><PitchBoard k={k} /></group>)}
     </group>
   );
 }

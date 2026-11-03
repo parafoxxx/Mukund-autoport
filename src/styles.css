@@ -641,3 +641,37 @@ kbd {
 .ap-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--saffron); box-shadow: 0 0 0 0 rgba(255, 181, 71, 0.6); animation: appulse 1.6s ease-out infinite; }
 @keyframes appulse { 70% { box-shadow: 0 0 0 9px rgba(255, 181, 71, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 181, 71, 0); } }
 @media (prefers-reduced-motion: reduce) { .ap-arrow, .ap-dot { animation: none; } }
+
+/* ---------- the plan for Wispr Flow India: a fanned hand of cards ---------- */
+.plan-deck { position: fixed; inset: 0; z-index: 45; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 24px 16px; overflow: hidden;
+  background: radial-gradient(ellipse at 50% 30%, rgba(60, 22, 40, 0.92), rgba(10, 7, 14, 0.96) 70%); backdrop-filter: blur(8px); }
+.plan-burst { position: absolute; left: 50%; top: 26%; width: 1600px; height: 1600px; margin: -800px 0 0 -800px; pointer-events: none; opacity: 0.5;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 90, 31, 0.12) 0 7.5deg, transparent 7.5deg 15deg); animation: burst 60s linear infinite;
+  -webkit-mask: radial-gradient(circle, #000 0 22%, transparent 60%); mask: radial-gradient(circle, #000 0 22%, transparent 60%); }
+@keyframes burst { to { transform: rotate(360deg); } }
+.plan-head { position: relative; text-align: center; max-width: 640px; }
+.plan-head .mono { color: var(--saffron); font-size: 11px; letter-spacing: 0.16em; }
+.plan-head h2 { margin-top: 10px; font: 400 clamp(30px, 5vw, 52px)/1.06 var(--serif); color: var(--paper); }
+.plan-head h2 em { color: #ff5a1f; font-style: italic; }
+.plan-sub { margin-top: 10px; color: var(--paper-dim); font-size: 15px; line-height: 1.55; }
+.plan-hand { position: relative; width: min(400px, 88vw); height: min(480px, 60vh); }
+.plan-cardx { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 10px; padding: 0 22px 20px; border-radius: 20px; background: #fbf6ec; color: #1a1208; cursor: pointer; overflow: hidden;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06); }
+.plan-cardx.front { cursor: default; overflow-y: auto; scrollbar-width: thin; box-shadow: 0 34px 80px rgba(0, 0, 0, 0.6), 0 0 0 2px var(--tint), 0 0 60px color-mix(in srgb, var(--tint) 35%, transparent); }
+.pc-top { display: flex; align-items: center; gap: 10px; margin: 0 -22px; padding: 16px 22px; background: var(--tint); color: #fff; }
+.pc-icon { display: inline-flex; width: 38px; height: 38px; padding: 8px; border-radius: 12px; background: rgba(255, 255, 255, 0.18); }
+.pc-icon svg { width: 100%; height: 100%; }
+.pc-tag { font-size: 11px; letter-spacing: 0.14em; }
+.pc-num { margin-left: auto; font: italic 400 44px/1 var(--serif); opacity: 0.9; }
+.plan-cardx h3 { margin-top: 8px; font: 400 clamp(22px, 3vw, 27px)/1.18 var(--serif); }
+.pc-what { font-size: 14.5px; line-height: 1.55; color: #4a3b2c; }
+.plan-cardx dl { margin-top: auto; display: grid; gap: 10px; padding-top: 12px; border-top: 1px dashed #d9cbb0; }
+.plan-cardx dt { font-size: 9.5px; letter-spacing: 0.12em; color: var(--tint); }
+.plan-cardx dd { margin: 2px 0 0; font-size: 13.5px; line-height: 1.45; }
+.plan-foot { position: relative; display: flex; align-items: center; gap: 10px; }
+.plan-dots { display: flex; gap: 8px; }
+.plan-dots button { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 244, 220, 0.25); cursor: pointer; transition: transform 0.2s, background 0.2s; }
+.plan-dots button.on { background: var(--tint); transform: scale(1.35); }
+.plan-foot .btn-primary { margin-left: 10px; }
+@media (max-height: 720px) { .plan-deck { gap: 14px; } .plan-sub { display: none; } .plan-head h2 { font-size: clamp(24px, 4vw, 34px); } .plan-hand { height: 66vh; } .pc-what { font-size: 13.5px; } }
+@media (prefers-reduced-motion: reduce) { .plan-burst { animation: none; } }

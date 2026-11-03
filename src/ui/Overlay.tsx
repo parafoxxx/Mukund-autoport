@@ -87,6 +87,7 @@ export function Overlay() {
       {phase === "ride" && <BoardPrompt />}
       <Lightbox />
       <Embed />
+      <PlanCard />
       {phase === "ride" && <ExhibitCard />}
       {phase === "ride" && <RouteMap />}
       {phase !== "intro" && <Toast />}
@@ -992,6 +993,74 @@ function BoardPrompt() {
           <span className="bp-key">{coarse ? "Tap" : "F"}</span>
           <span><b>{near ? "Get in your auto" : "Walk to your auto"}</b>{near ? (coarse ? " and the ride begins" : " · or press Enter") : " · it’s parked right behind you"}</span>
         </motion.button>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ---------- the plan for Wispr Flow India: opened from a pitch board or the poster on the auto ---------- */
+const PLAN_TINT = ["#e4007c", "#1e88e5", "#00a884"];
+export function planKey(code: string) {
+  const k = ui.get().plan;
+  if (k === null) return false;
+  if (code === "Escape" || code === "Space" || code === "Enter") ui.set({ plan: null });
+  const step = code === "ArrowRight" || code === "KeyD" ? 1 : code === "ArrowLeft" || code === "KeyA" ? -1 : 0;
+  if (step) ui.set({ plan: (k + step + WISPR_PLAN.ideas.length) % WISPR_PLAN.ideas.length });
+  return true;
+}
+/** One icon per idea: a creator's camera, a graduation cap, a rupee tag. */
+function PlanIcon({ k }: { k: number }) {
+  const s = { fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" } as const;
+  if (k === 0) return <svg viewBox="0 0 24 24" {...s}><rect x="2.5" y="6" width="13" height="12" rx="2.5" /><path d="M15.5 10.5l6-3v9l-6-3" /><circle cx="9" cy="12" r="2.2" /></svg>;
+  if (k === 1) return <svg viewBox="0 0 24 24" {...s}><path d="M2 9l10-5 10 5-10 5z" /><path d="M6 11.2V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-4.8" /><path d="M22 9v5" /></svg>;
+  return <svg viewBox="0 0 24 24" {...s}><path d="M3 12V4.5A1.5 1.5 0 014.5 3H12l9 9-9 9z" /><path d="M8 7.5h5M8 10h5M11 10c0 2-1.5 3-3 3l4 3.5" /></svg>;
+}
+function PlanCard() {
+  const k = useUI((s) => s.plan);
+  const n = WISPR_PLAN.ideas.length;
+  const go = (j: number) => ui.set({ plan: (j + n) % n });
+  return (
+    <AnimatePresence>
+      {k !== null && (
+        <motion.div className="plan-deck" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.25 } }} onClick={() => ui.set({ plan: null })} role="dialog" aria-label="My first 90 days at Wispr Flow India">
+          <div className="plan-burst" aria-hidden />
+          <motion.header className="plan-head" initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE }} onClick={(e) => e.stopPropagation()}>
+            <p className="mono">★ If you hire me · my first 90 days ★</p>
+            <h2>India is <em>#2</em> by users.<br />A small slice of revenue.</h2>
+            <p className="plan-sub">That's the job: grow the users who are already here, and turn them into paying ones. Three ways I'd start.</p>
+          </motion.header>
+          <div className="plan-hand" onClick={(e) => e.stopPropagation()}>
+            {WISPR_PLAN.ideas.map((idea, j) => {
+              const off = ((j - k + n + 1) % n) - 1; // -1, 0, 1: left, front, right
+              const front = off === 0;
+              return (
+                <motion.article key={idea.tag} className={"plan-cardx" + (front ? " front" : "")} style={{ "--tint": PLAN_TINT[j], zIndex: front ? 3 : 1 } as CSSProperties}
+                  initial={{ opacity: 0, y: 120, rotate: 0, scale: 0.8 }}
+                  animate={{ opacity: front ? 1 : 0.62, x: `${off * 74}%`, y: front ? 0 : 26, rotate: off * 7, scale: front ? 1 : 0.86 }}
+                  transition={{ type: "spring", stiffness: 160, damping: 20, delay: 0.12 + j * 0.06 }}
+                  onClick={() => !front && go(j)} aria-hidden={!front}>
+                  <div className="pc-top">
+                    <span className="pc-icon"><PlanIcon k={j} /></span>
+                    <span className="mono pc-tag">{idea.tag}</span>
+                    <b className="pc-num">{String(j + 1).padStart(2, "0")}</b>
+                  </div>
+                  <h3>{idea.title}</h3>
+                  <p className="pc-what">{idea.what}</p>
+                  <dl>
+                    <div><dt className="mono">Measure</dt><dd>{idea.measure}</dd></div>
+                    <div><dt className="mono">Why me</dt><dd>{idea.proof}</dd></div>
+                  </dl>
+                </motion.article>
+              );
+            })}
+          </div>
+          <motion.footer className="plan-foot" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} onClick={(e) => e.stopPropagation()}>
+            <button className="ibtn" onClick={() => go(k - 1)} aria-label="Previous idea"><IconArrow dir="left" /></button>
+            <span className="plan-dots">{WISPR_PLAN.ideas.map((_, j) => <button key={j} className={j === k ? "on" : ""} style={{ "--tint": PLAN_TINT[j] } as CSSProperties} onClick={() => go(j)} aria-label={`Idea ${j + 1}`} />)}</span>
+            <button className="ibtn" onClick={() => go(k + 1)} aria-label="Next idea"><IconArrow dir="right" /></button>
+            <button className="btn-primary sm" onClick={() => ui.set({ plan: null })}>Back to the road{!coarse && <kbd>Esc</kbd>}</button>
+          </motion.footer>
+        </motion.div>
       )}
     </AnimatePresence>
   );
