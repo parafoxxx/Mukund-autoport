@@ -10,6 +10,7 @@ import { EMOTES, toggleAuto } from "./game/Player";
 import { beginRide, exhibitAction, exhibitStory, jumpToWork, lightboxKey, Overlay, resetToRoad, voiceDriveNow } from "./ui/Overlay";
 import { toggleVoiceDrive } from "./game/voiceDrive";
 import { GUEST } from "./game/guest";
+import { track } from "./game/counter";
 
 if (GUEST) document.title = `Mukund ki Auto · for ${GUEST}`;
 
@@ -46,6 +47,7 @@ export default function App() {
 
   // the score is set up straight away (and plays at once if the browser allows it);
   // otherwise the first click or key press, usually the loader's "tap to begin", starts it
+  useEffect(() => { track("visit"); }, []);
   useEffect(() => {
     startMusic();
     const go = () => { wakeAudio(); removeEventListener("pointerdown", go); removeEventListener("keydown", go); };

@@ -17,6 +17,9 @@ import { BADGES } from "../game/achievements";
 import { RouteMap, travelTo } from "./RouteMap";
 import { MiniMap } from "./MiniMap";
 import { markTip, Tip } from "./Tip";
+import { onCounts, riderNumber, track, type Counts } from "../game/counter";
+import { dictate, dictateSupported, stopDictation, type DictateState } from "../game/dictate";
+import { sayOnBillboard } from "../game/store";
 
 const N = STOPS.length;
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -32,6 +35,7 @@ function markCoached() { try { localStorage.setItem(COACH_KEY, "1"); } catch { /
 /* ---------- actions shared with the keyboard handler ---------- */
 export function beginRide(express: boolean) {
   startEngine();
+  track("ride");
   placeWalkerAtStart();
   // the express cut is a guided tour in the auto; otherwise he starts on foot,
   // with the auto pulled up the road ahead of where he'll stand, so it's in view when the chapter ends
@@ -931,6 +935,108 @@ function BoardPrompt() {
   );
 }
 
+/* ---------- the growth experiment: share your fare ticket ---------- */
+function ticketImage(o: { km: number; visited: number; badges: number; rider: number | null }) {
+  const c = document.createElement("canvas"); c.width = 1200; c.height = 630;
+  const g = c.getContext("2d")!;
+  g.fillStyle = "#14100c"; g.fillRect(0, 0, 1200, 630);
+  // the ticket, with its punched edge
+  g.save(); g.beginPath(); g.roundRect(70, 70, 1060, 490, 28); g.clip();
+  g.fillStyle = "#fbf3df"; g.fillRect(70, 70, 1060, 490);
+  g.fillStyle = "#ffb547"; g.fillRect(70, 70, 1060, 16);
+  g.restore();
+  g.fillStyle = "#14100c"; for (let y = 104; y < 560; y += 34) { g.beginPath(); g.arc(800, y, 9, 0, Math.PI * 2); g.fill(); }
+  g.fillStyle = "#6d5a40"; g.font = "bold 22px monospace"; g.fillText("AUTO TICKET · UP 80 · AGRA → BENGALURU", 120, 140);
+  g.fillStyle = "#1a1208"; g.font = "86px Georgia, serif"; g.fillText("Mukund ki", 120, 250);
+  const after = 120 + g.measureText("Mukund ki ").width;
+  g.fillStyle = "#e8902a"; g.font = "italic 86px Georgia, serif"; g.fillText("Auto", after, 250);
+  const rows: [string, string][] = [["FARE", `₹${fare(o.km)}`], ["DISTANCE", `${o.km.toFixed(2)} km`], ["CHAPTERS", `${o.visited}/${N}`], ["ACHIEVEMENTS", `${o.badges}/${BADGES.length}`]];
+  rows.forEach(([l, v], k) => {
+    const x = 120 + (k % 2) * 330, y = 330 + Math.floor(k / 2) * 110;
+    g.fillStyle = "#8a7656"; g.font = "bold 20px monospace"; g.fillText(l, x, y);
+    g.fillStyle = "#1a1208"; g.font = "bold 46px Georgia, serif"; g.fillText(v, x, y + 52);
+  });
+  g.fillStyle = "#8a7656"; g.font = "bold 20px monospace"; g.fillText("RIDER", 860, 150);
+  g.fillStyle = "#1a1208"; g.font = "bold 74px Georgia, serif"; g.fillText(o.rider ? `#${o.rider}` : "#—", 860, 230, 240);
+  g.fillStyle = "#6d5a40"; g.font = "26px Georgia, serif";
+  ["A 3D road movie", "of one growth", "builder's life.", "Directed by voice."].forEach((l, k) => g.fillText(l, 860, 320 + k * 38));
+  g.fillStyle = "#e8902a"; g.font = "bold 24px monospace"; g.fillText(location.host.toUpperCase(), 860, 520, 240);
+  return new Promise<Blob | null>((res) => c.toBlob(res, "image/png"));
+}
+
+function ShareTicket({ km, visited, badges, rider, onStop }: { km: number; visited: number; badges: number; rider: number | null; onStop: () => void }) {
+  const [note, setNote] = useState("");
+  const share = async () => {
+    onStop();
+    const blob = await ticketImage({ km, visited, badges, rider });
+    const url = location.origin + "/";
+    const text = `I just rode Mukund ki Auto${rider ? ` as rider #${rider}` : ""}: ${visited}/${N} chapters, ₹${fare(km)} fare. A portfolio you drive, by voice.`;
+    track("share");
+    const file = blob && new File([blob], "mukund-ki-auto-ticket.png", { type: "image/png" });
+    const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
+    if (file && nav.canShare?.({ files: [file] })) {
+      try { await navigator.share({ files: [file], text, url }); setNote("Shared. Thank you for riding."); return; } catch { /* cancelled */ }
+    }
+    // desktop: save the image, then open LinkedIn ready to post it
+    if (blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "mukund-ki-auto-ticket.png"; a.click(); }
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, "_blank", "noopener");
+    setNote("Ticket saved. Attach it to your LinkedIn post.");
+  };
+  return (
+    <div className="share-ticket">
+      <button className="btn-primary" onClick={share}><IconLink />Share my ticket</button>
+      <span className="mono">{note || "Your fare ticket as an image, ready to post"}</span>
+    </div>
+  );
+}
+
+/* ---------- "Say it, see it": what Wispr Flow does, in miniature ---------- */
+function SayItSeeIt({ onStop }: { onStop: () => void }) {
+  const [state, setState] = useState<DictateState>("idle");
+  const [level, setLevel] = useState(0);
+  const [said, setSaid] = useState<{ text: string; wpm: number; words: number } | null>(null);
+  const [typed, setTyped] = useState("");
+  const [miss, setMiss] = useState(false);
+  useEffect(() => {
+    if (!said) return;
+    let i = 0;
+    const t = window.setInterval(() => { i++; setTyped(said.text.slice(0, i)); if (i >= said.text.length) window.clearInterval(t); }, 34);
+    return () => window.clearInterval(t);
+  }, [said]);
+  if (!dictateSupported) return null;
+  const go = async () => {
+    onStop();
+    if (state === "listening") { stopDictation(); return; }
+    if (state !== "idle") return;
+    setMiss(false); setSaid(null); setTyped("");
+    try {
+      const r = await dictate(setState, setLevel);
+      if (!r) { setMiss(true); return; }
+      const words = r.text.split(/\s+/).filter(Boolean).length;
+      setSaid({ text: r.text, words, wpm: Math.round(words / (r.seconds / 60)) });
+      sayOnBillboard(r.text);
+    } catch { setState("idle"); setMiss(true); }
+  };
+  return (
+    <section className="say">
+      <p className="mono label">Say it, see it</p>
+      <h3>Don't type. Just talk.</h3>
+      <p className="say-sub">This is what Wispr Flow does in every app. Here's a tiny version: say any sentence, in English or Hinglish, and watch it write itself.</p>
+      <div className="say-board" aria-live="polite">
+        <span className="mono say-tag">Wispr billboard · live</span>
+        <p className="say-text">{typed || (state === "listening" ? "Listening…" : state === "thinking" ? "Writing it down…" : miss ? "Didn't catch that. Try once more?" : "Your words go here.")}{said && typed.length < said.text.length && <i className="say-caret" />}</p>
+        {said && typed.length >= said.text.length && said.words >= 4 && (
+          <p className="mono say-wpm">You spoke at <b>{said.wpm} words a minute</b>. Most people type around 40.</p>
+        )}
+      </div>
+      <button className={"say-mic" + (state === "listening" ? " on" : "")} onClick={go} disabled={state === "thinking"} style={{ "--lvl": level } as CSSProperties}>
+        <IconMic />{state === "listening" ? "Done? Tap to stop" : state === "thinking" ? "Writing…" : said ? "Say another" : "Tap and speak"}
+      </button>
+      <p className="mono say-note">Speech-to-text by Sarvam AI. Nothing is stored.</p>
+    </section>
+  );
+}
+
 /* ---------- finale: rolling end credits ---------- */
 const CREDITS: [string, string][] = [
   ["Starring", `${ME.name}, as the notorious driver`],
@@ -968,6 +1074,9 @@ function Credits() {
     return () => { clearTimeout(t0); cancelAnimationFrame(raf); };
   }, []);
   const stopAuto = () => { userScrolled.current = true; };
+  const [counts, setCounts] = useState<Counts | null>(null);
+  useEffect(() => { const off = onCounts(setCounts); track("finish"); return off; }, []);
+  const rider = riderNumber();
   const skip = () => { stopAuto(); scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: "smooth" }); };
   return (
     <motion.div className="credits" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 1.2 }}>
@@ -986,8 +1095,16 @@ function Credits() {
             <div><span className="mono">Chapters</span><b>{visited}/{N}</b></div>
             <div><span className="mono">Achievements</span><b>{badges}/{BADGES.length}</b></div>
             {GUEST && <div><span className="mono">Passenger</span><b>{GUEST}</b></div>}
+            {rider && <div><span className="mono">Rider</span><b>#{rider}</b></div>}
             <p>Payable in a job offer.</p>
           </div>
+          <ShareTicket km={km} visited={visited} badges={badges} rider={rider} onStop={stopAuto} />
+          {counts && (
+            <p className="mono counts">
+              {counts.ride.toLocaleString("en-IN")} rides started · {counts.finish.toLocaleString("en-IN")} finished · {counts.share.toLocaleString("en-IN")} tickets shared
+            </p>
+          )}
+          <SayItSeeIt onStop={stopAuto} />
           <section className="plan">
             <p className="mono label">If you hire me · my first 90 days</p>
             <h3>Growing Wispr Flow in India</h3>

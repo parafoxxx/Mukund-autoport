@@ -4,7 +4,7 @@ import { RoundedBox, Text } from "@react-three/drei";
 import * as THREE from "three";
 import { ConvexGeometry } from "three/examples/jsm/geometries/ConvexGeometry.js";
 import { FIRST } from "./guest";
-import { ui } from "./store";
+import { billboard, ui } from "./store";
 import { DECKS, EXHIBITS, ME, STOPS } from "../content";
 import { BOOTH, COLUMNS_Z, deckX, HALL } from "./hall";
 import { BESIDE, PLACEMENTS, ROAD_HALF, STOP_POS, STOP_U, rng, roadHeading } from "./track";
@@ -1309,7 +1309,8 @@ function billboardTexture() {
   const c = document.createElement("canvas"); c.width = 1024; c.height = 512;
   const g = c.getContext("2d")!;
   const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
-  const draw = (photo?: HTMLImageElement) => {
+  let photo: HTMLImageElement | undefined;
+  const draw = () => {
     g.fillStyle = "#fff4dc"; g.fillRect(0, 0, 1024, 512);
     g.fillStyle = "#ff3d00"; g.fillRect(0, 0, 1024, 18); g.fillRect(0, 494, 1024, 18);
     const textX = photo ? 420 : 60;
@@ -1325,14 +1326,16 @@ function billboardTexture() {
     g.fillStyle = "#1a1208"; g.font = "38px Georgia, serif";
     g.fillText(`${ME.name} · Growth, India`, textX, 310);
     g.font = "italic 32px Georgia, serif"; g.fillStyle = "#5d4037";
-    g.fillText("This whole ride was built by voice.", textX, 380);
+    const said = billboard.line.length > 44 ? billboard.line.slice(0, 43) + "…" : billboard.line;
+    g.fillText(said ? `“${said}”` : "This whole ride was built by voice.", textX, 380, 1024 - textX - 40);
     g.font = "bold 30px Georgia, serif"; g.fillStyle = "#ff3d00";
     g.fillText("Can start in May · Bengaluru", textX, 440);
     tex.needsUpdate = true;
   };
   draw();
+  billboard.redraw = draw;
   const img = new Image();
-  img.onload = () => draw(img);
+  img.onload = () => { photo = img; draw(); };
   img.src = "/photos/mukund.jpg";
   return tex;
 }

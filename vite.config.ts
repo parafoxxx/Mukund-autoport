@@ -31,7 +31,8 @@ function voiceStudio(): Plugin {
   };
 }
 
-/** Dev-only: serves /api/stt locally, the same code the Netlify function runs in production. */
+/** Dev-only: serves /api/stt and /api/count locally, the same code the Netlify functions run in production. */
+let devCounts: unknown = null;
 function apiRoutes(): Plugin {
   return {
     name: "api-routes",
@@ -44,6 +45,19 @@ function apiRoutes(): Plugin {
         if (req.method === "GET" && route === "/api/stt") {
           const { sttConfigured } = await server.ssrLoadModule("/server/stt.ts");
           res.setHeader("content-type", "application/json"); res.end(JSON.stringify({ configured: sttConfigured() }));
+          return;
+        }
+        if (route === "/api/count") {
+          const { count, memoryStore } = await server.ssrLoadModule("/server/count.ts");
+          devCounts ??= memoryStore();
+          let event: unknown;
+          if (req.method === "POST") {
+            const body: Buffer[] = [];
+            for await (const c of req) body.push(c as Buffer);
+            try { event = JSON.parse(Buffer.concat(body).toString("utf8")).event; } catch { /* no event */ }
+          }
+          const r = await count(devCounts, event, req.socket.remoteAddress ?? "local");
+          res.statusCode = r.status; res.setHeader("content-type", "application/json"); res.end(JSON.stringify(r.body));
           return;
         }
         if (req.method !== "POST" || route !== "/api/stt") return next();

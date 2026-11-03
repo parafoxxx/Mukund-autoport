@@ -55,6 +55,10 @@ export const ESTABLISH = 3.2;
 /** Where a chapter is: before his line (Space cuts to it) or after (Space moves on). */
 export const beat = { spoke: false, cut: 0, speakNow: null as null | (() => void) };
 
+/** The last thing a visitor said in "Say it, see it" also goes up on the 3D billboard at the last stop. */
+export const billboard = { line: "", redraw: () => {} };
+export function sayOnBillboard(text: string) { billboard.line = text; billboard.redraw(); }
+
 /** Puts a line in Mukund's speech bubble. */
 export function say(line: string, voice = "") { ui.set({ quip: line, quipId: state.quipId + 1, quipVoice: voice }); }
 const listeners = new Set<() => void>();
