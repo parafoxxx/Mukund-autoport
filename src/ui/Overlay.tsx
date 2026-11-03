@@ -1422,7 +1422,7 @@ function Credits() {
             <h3 className="final-title">Wispr Flow.</h3>
             <p className="final-sub">Growth needs someone who talks to people, ships fast and measures everything. I've done all three, and I built this ride by voice.</p>
             <div className="links">
-              <a className="btn-primary" href={ME.links.video} target="_blank" rel="noopener"><IconPlay />Watch me build it</a>
+              {ME.links.video !== "#" && <a className="btn-primary" href={ME.links.video} target="_blank" rel="noopener"><IconPlay />Watch me build it</a>}
               <a className="btn-ghost" href={ME.links.linkedin} target="_blank" rel="noopener"><IconLink />LinkedIn</a>
               <a className="btn-ghost" href={ME.links.email}>Email</a>
               <a className="btn-ghost" href={ME.links.letterboxd} target="_blank" rel="noopener">Letterboxd</a>
