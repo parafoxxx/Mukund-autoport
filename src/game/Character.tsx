@@ -6,8 +6,8 @@ import { HERO_ACTS, HERO_GREETING, STOPS, type Act } from "../content";
 import { FIRST } from "./guest";
 import { beat, bubbleAnchor, ESTABLISH, say, sim, ui, useUI } from "./store";
 import { PLACEMENTS, ROAD_HALF, START, STOP_POS, STOP_U, roadHeading } from "./track";
-import { playVoice, voiceLevel } from "./sound";
-import { Garland } from "./Garland";
+import { bell, playVoice, voiceLevel } from "./sound";
+import { MirrorScene } from "./Mirror";
 
 /** Mukund's body (Avaturn export, carries the backflip). The other acts are animation-only files sharing its skeleton. */
 export const AVATAR_URL = "/avatar/mukund.glb";
@@ -30,6 +30,12 @@ export function characterSpot(i: number) {
   const away = pos.clone().sub(behind).setY(0).normalize();
   if (away.lengthSq() < 0.01) away.copy(fwd).multiplyScalar(-1);
   return { pos, away, rotY: Math.atan2(away.x, away.z) };
+}
+
+/** The way he faces at the mirror: directly away from the title-screen camera. */
+export function mirrorDir() {
+  const hero = heroSpot();
+  return hero.fwd.clone().multiplyScalar(0.85).addScaledVector(hero.right, -0.55).normalize().negate();
 }
 
 /** On the title screen he stands beside the parked auto. */
@@ -70,7 +76,9 @@ function FacesCamera({ position, children }: { position: THREE.Vector3; children
   const first = useRef(true);
   useFrame(({ camera }, dt) => {
     const g = ref.current; if (!g) return;
-    const want = Math.atan2(camera.position.x - position.x, camera.position.z - position.z);
+    let want = Math.atan2(camera.position.x - position.x, camera.position.z - position.z);
+    const s = ui.get();
+    if (s.phase === "intro" && s.profile) { const d = mirrorDir(); want = Math.atan2(d.x, d.z); }
     if (first.current) { g.rotation.y = want; first.current = false; return; }
     const diff = Math.atan2(Math.sin(want - g.rotation.y), Math.cos(want - g.rotation.y));
     g.rotation.y += diff * Math.min(1, dt * 3);
@@ -200,7 +208,7 @@ function Avatar({ mode, chapter }: { mode: "hero" | "chapter"; chapter: number |
         if (FIRST) say(`Arre ${FIRST}! Aao, baitho, chalte hain.`);
         else { say(HERO_GREETING, "hero-greet"); playVoice("hero-greet"); }
       }, 900));
-      // every so often a trick, but not while you're looking at his garland
+      // every so often a trick, but not while he's at the mirror
       const loop = window.setInterval(() => { if (!ui.get().profile) heroBit.current(); }, 9000);
       return () => { clearInterval(loop); clearTimers(); mixer.stopAllAction(); };
     }
@@ -245,12 +253,12 @@ function Avatar({ mode, chapter }: { mode: "hero" | "chapter"; chapter: number |
     bubbleAnchor.visible = p.z < 1 && Math.abs(p.x) < 1.1 && Math.abs(p.y) < 1.1;
   });
 
-  // on the title screen, clicking him brings the camera in close to his garland of links; he stands easy so it hangs still
+  // on the title screen, clicking him sends him to the mirror: aarti for his own reflection, with a bell
   const profile = useUI((s) => s.profile);
   useEffect(() => {
     if (mode !== "hero") return;
     clearTimers();
-    if (profile) { base.current = "idle"; perform.current("idle"); say("Mala pehna di. Ab ek link pe click toh banta hai."); }
+    if (profile) { base.current = "conduct"; perform.current("conduct", 999); bell(); window.setTimeout(bell, 450); }
     else { base.current = "dance"; perform.current("dance"); }
   }, [profile, mode]);
   const hover = (on: boolean) => { document.body.style.cursor = on ? "pointer" : ""; };
@@ -258,8 +266,8 @@ function Avatar({ mode, chapter }: { mode: "hero" | "chapter"; chapter: number |
     <group>
       <primitive object={scene} />
       <DirectorChair />
-      {mode === "hero" && <Garland scene={scene} visible={profile} onOpen={(p) => window.open(p.url, p.url.startsWith("mailto:") ? "_self" : "_blank", "noopener")} />}
-      {/* an invisible, generous hit area: click him on the title screen and the camera comes in to his garland */}
+      {mode === "hero" && profile && <MirrorScene scene={scene} />}
+      {/* an invisible, generous hit area: click him on the title screen and he goes to the mirror */}
       {!profile && (
         <mesh
           position-y={0.95}

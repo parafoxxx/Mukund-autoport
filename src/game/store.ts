@@ -28,7 +28,7 @@ type UIState = {
   quipVoice: string;       // id of the recorded clip for this line ("" = babble)
   onFoot: boolean;         // walking around as Mukund (the auto tags along) vs driving it
   mapOpen: boolean;        // the route map is up
-  profile: boolean;        // title screen: the close-up on his garland of links
+  profile: boolean;        // title screen: he's at the mirror, his links on its garland
   lightbox: { stop: number; index: number } | null; // a chapter photo open full screen
   embed: string | null;    // a live page (the Meesho prototype) open in a window inside the ride
   boarded: boolean;        // has got into the auto at least once this ride (until then, we nudge)

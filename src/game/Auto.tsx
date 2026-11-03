@@ -9,7 +9,8 @@ import { input, driving } from "./input";
 import { beat, bubbleAnchor, ESTABLISH, focus, sim, ui, walker } from "./store";
 import { BESIDE, BOUNDS, COLLIDERS, CURVE, PLACEMENTS, ROAD_HALF, SAMPLES, SAMPLE_COUNT, START, STOP_POS, STOP_U, guidePoint, nearestSample } from "./track";
 import { FONT_MONO, FONT_SERIF } from "./Roadside";
-import { AVATAR_URL, characterSpot, heroSpot, useActs } from "./Character";
+import { AVATAR_URL, characterSpot, heroSpot, mirrorDir, useActs } from "./Character";
+import { MIRROR_AT } from "./Mirror";
 import { scripted, SEAT } from "./Player";
 import { ENTRANCE, inHall, PARKING } from "./hall";
 import { bonk, bump, horn, setEngine, voiceLevel } from "./sound";
@@ -169,6 +170,8 @@ export function Auto() {
     if (!g || !c) return;
     g.position.set(sim.pos.x, sim.lift, sim.pos.z);
     g.rotation.y = sim.heading;
+    const ui0 = ui.get();
+    g.visible = !(ui0.phase === "intro" && ui0.profile); // out of the way while he's at the mirror
     const t = clock.elapsedTime;
     c.position.y = Math.sin(t * 46) * 0.012 * (1 + Math.abs(sim.speed) * 0.05); // two-stroke shiver
     // body roll on a spring: hard turns at speed tip it up onto two wheels a little, then it rocks back (never over)
@@ -335,13 +338,14 @@ export function CameraRig() {
     let kind: Shot = "chase";
     if (s.phase === "intro" && s.profile) {
       kind = "intro";
-      // the close-up: his chest and shoulders, framed right of centre so the card on the left stays clear
-      const hero = heroSpot();
+      // the mirror: over his shoulder, his reflection and the garlanded frame right of centre, clear of the card
+      const hero = heroSpot(), toMirror = mirrorDir();
       const tall = cam.aspect < 1;
-      const dir = hero.fwd.clone().multiplyScalar(0.85).addScaledVector(hero.right, -0.55).normalize();
-      want.copy(hero.pos).addScaledVector(dir, tall ? 2.0 : 1.25).setY(1.45);
-      look.copy(hero.pos).setY(tall ? 1.05 : 1.36);
-      if (!tall) look.addScaledVector(new THREE.Vector3(dir.z, 0, -dir.x), -0.36);
+      const side = new THREE.Vector3(toMirror.z, 0, -toMirror.x);
+      const mirror = hero.pos.clone().addScaledVector(toMirror, MIRROR_AT);
+      want.copy(hero.pos).addScaledVector(toMirror, tall ? -2.1 : -1.35).addScaledVector(side, tall ? -0.5 : -0.95).setY(1.7);
+      look.copy(mirror).setY(tall ? 1.25 : 1.5);
+      look.addScaledVector(side, tall ? 0.1 : 0.42);
       ease = 1 - Math.exp(-dt * 2.4);
     } else if (s.phase === "intro") {
       kind = "intro";

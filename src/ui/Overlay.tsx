@@ -17,7 +17,7 @@ import { BADGES } from "../game/achievements";
 import { RouteMap, travelTo } from "./RouteMap";
 import { MiniMap } from "./MiniMap";
 import { markTip, Tip } from "./Tip";
-import { CHARMS } from "../game/Garland";
+import { CHARMS, openCharm } from "./links";
 import { onCounts, riderNumber, track, type Counts } from "../game/counter";
 import { dictate, dictateSupported, stopDictation, type DictateState } from "../game/dictate";
 import { sayOnBillboard } from "../game/store";
@@ -309,17 +309,17 @@ function Loader() {
 }
 
 /* ---------- title sequence ---------- */
-/** The close-up on his garland: who he is, and its links as plain buttons too. */
+/** Beside the mirror: who he is, and the garland's links as plain buttons too. */
 function ProfileCard() {
   const links = CHARMS;
   return (
     <motion.div className="profile" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.5, ease: EASE }}>
-      <p className="mono eyebrow">Find me online</p>
+      <p className="mono eyebrow">Self-respect, daily</p>
       <h2>{ME.name}</h2>
       <p className="profile-role">Growth and product · IIT Kanpur, class of 2027 · Can start in May, Bengaluru</p>
-      <p className="profile-hint">My links hang on the garland. {coarse ? "Tap" : "Click"} one, or pick it here.</p>
+      <p className="profile-hint">Every morning, an aarti for the man in the mirror. His links hang on the garland: {coarse ? "tap" : "click"} one, or pick it here.</p>
       <div className="profile-links">
-        {links.map((l) => <a key={l.id} className={`plink plink-${l.id}`} href={l.url} target={l.url.startsWith("mailto:") ? undefined : "_blank"} rel="noopener"><i />{l.label}</a>)}
+        {links.map((l) => <button key={l.id} className={`plink plink-${l.id}`} onClick={() => openCharm(l)}><i />{l.label}</button>)}
       </div>
       <button className="btn-ghost sm" onClick={() => ui.set({ profile: false })}><IconArrow dir="left" />Back{!coarse && <kbd>Esc</kbd>}</button>
     </motion.div>
