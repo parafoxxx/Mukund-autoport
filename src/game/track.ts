@@ -94,6 +94,21 @@ function placeLibrary(i: number) {
 
 export const PLACEMENTS = STOPS.map((s, i) => (s.landmark === "gate" ? placeLibrary(i) : place(i)));
 
+/** The book tower in Agra: across the road from the Taj and a little before it, clear of where he stands. */
+function placeAcross(i: number) {
+  const kind = STOPS[i].across!, { offset, radius } = LANDMARK_SIZE[kind];
+  const u = Math.max(0, STOP_U[i] - 14 / CURVE.getLength());
+  const at = CURVE.getPointAt(u), h = roadHeading(u);
+  const right = new THREE.Vector3(Math.cos(h), 0, -Math.sin(h));
+  const main = PLACEMENTS[i].pos;
+  const away = (main.x - at.x) * right.x + (main.z - at.z) * right.z > 0 ? -1 : 1;
+  const dir = right.multiplyScalar(away);
+  let pos = new THREE.Vector3(at.x, 0, at.z).addScaledVector(dir, offset);
+  for (let extra = 0; extra < 12 && nearestSample(pos).dist - radius - ROAD_HALF < 1.5; extra += 2) pos = new THREE.Vector3(at.x, 0, at.z).addScaledVector(dir, offset + extra);
+  return { kind, pos, rotY: Math.atan2(-dir.x, -dir.z), radius };
+}
+export const ACROSS = STOPS.map((s, i) => (s.across ? placeAcross(i) : null));
+
 /** open: he can walk through it (the hall's outline, entered by its door). decor: the camera ignores it. */
 export type Collider = { x: number; z: number; r: number; open?: boolean; decor?: boolean };
 export const COLLIDERS: Collider[] = [];
@@ -101,6 +116,8 @@ export const COLLIDERS: Collider[] = [];
 STOPS.forEach((s, i) => {
   const P = PLACEMENTS[i];
   if (P.radius > 0) COLLIDERS.push({ x: P.pos.x, z: P.pos.z, r: P.radius });
+  const A = ACROSS[i];
+  if (A) COLLIDERS.push({ x: A.pos.x, z: A.pos.z, r: A.radius });
   if (s.landmark === "gate") {
     const h = roadHeading(STOP_U[i]);
     const side = new THREE.Vector3(Math.cos(h), 0, -Math.sin(h));

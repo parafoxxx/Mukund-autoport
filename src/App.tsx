@@ -7,7 +7,7 @@ import { cue, ui, walker } from "./game/store";
 import { stepDeck } from "./game/hall";
 import { startMusic } from "./game/music";
 import { EMOTES, toggleAuto } from "./game/Player";
-import { beginRide, exhibitAction, exhibitStory, lightboxKey, Overlay, resetToRoad, voiceDriveNow } from "./ui/Overlay";
+import { beginRide, exhibitAction, exhibitStory, jumpToWork, lightboxKey, Overlay, resetToRoad, voiceDriveNow } from "./ui/Overlay";
 import { toggleVoiceDrive } from "./game/voiceDrive";
 import { GUEST } from "./game/guest";
 
@@ -25,6 +25,7 @@ export default function App() {
     }
     if (!down) return;
     if (code === "KeyM" && s.phase === "ride") { ui.set({ mapOpen: !s.mapOpen }); return; }
+    if (code === "KeyJ" && s.phase === "ride" && !s.mapOpen) { jumpToWork(); return; }
     if (s.mapOpen) { if (code === "Escape") ui.set({ mapOpen: false }); return; }
     if (s.lightbox) { lightboxKey(code); return; }
     if (s.embed) { if (code === "Escape") ui.set({ embed: null }); return; }

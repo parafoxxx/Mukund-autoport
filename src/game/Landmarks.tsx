@@ -7,7 +7,7 @@ import { FIRST } from "./guest";
 import { ui } from "./store";
 import { DECKS, EXHIBITS, ME, STOPS } from "../content";
 import { BOOTH, COLUMNS_Z, deckX, HALL } from "./hall";
-import { PLACEMENTS, ROAD_HALF, STOP_POS, STOP_U, rng, roadHeading } from "./track";
+import { ACROSS, PLACEMENTS, ROAD_HALF, STOP_POS, STOP_U, rng, roadHeading } from "./track";
 import { FONT_MONO, FONT_SERIF } from "./Roadside";
 
 const MARBLE = "#e8dcc6";
@@ -90,7 +90,7 @@ function Books() {
 
 /* The JEE years, around the book tower: his notes wall, his organic-chemistry chart, the lectures, and him in class.
    Photos are public/photos/jee-1..4.jpg (the same ones the chapter's gallery shows). Each one opens full screen. */
-const JEE_STOP = STOPS.findIndex((s) => s.id === "jee");
+const JEE_STOP = STOPS.findIndex((s) => s.across === "books");
 const openPhoto = (stop: number, index: number) => (e: { stopPropagation: () => void }) => { e.stopPropagation(); if (stop >= 0) ui.set({ lightbox: { stop, index } }); };
 const zoomCursor = (on: boolean) => { document.body.style.cursor = on ? "zoom-in" : ""; };
 
@@ -1212,7 +1212,12 @@ export function Landmarks() {
         if (s.landmark === "gate") return <group key={s.id}><OnRoad i={i}><Gate /></OnRoad><Placed i={i}><KelkarLibrary /></Placed></group>;
         // the comeback: the speed breaker on the road, and the climb beside it
         if (s.id === "comeback") return <group key={s.id}><OnRoad i={i}><Breaker /></OnRoad><Placed i={i}><Climb /></Placed></group>;
-        const C = BY_TYPE[s.landmark];
+        const C = BY_TYPE[s.landmark], A = ACROSS[i];
+        if (A) {
+          // Agra: the Taj on one side, the JEE book tower and his study corner across the road
+          const B = BY_TYPE[A.kind as keyof typeof BY_TYPE];
+          return <group key={s.id}><Placed i={i}><C /></Placed><group position={A.pos} rotation-y={A.rotY}><B /></group></group>;
+        }
         return <Placed key={s.id} i={i}><C /></Placed>;
       })}
     </group>

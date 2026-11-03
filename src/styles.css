@@ -563,3 +563,23 @@ kbd {
 .ftip-ok:hover { background: #efe4cc; }
 .ftip-row button:only-child { margin-left: 0; }
 @media (max-width: 700px) { .ftip { width: min(248px, calc(100vw - 32px)); } }
+
+/* ---------- the HUD's shortcut to the work ---------- */
+.ibtn.work { background: var(--saffron); color: #1a1208; border-color: transparent; }
+.ibtn.work:hover { background: #ffc766; }
+.ibtn.work svg { color: #1a1208; }
+
+/* ---------- credits: the plan for Wispr Flow India ---------- */
+.plan { margin: 72px auto 0; text-align: left; }
+.plan > .label, .plan > h3, .plan-hook { text-align: center; }
+.plan > h3 { font: 400 clamp(28px, 4vw, 40px)/1.1 var(--serif); color: var(--paper); margin-top: 6px; }
+.plan-hook { max-width: 560px; margin: 12px auto 0; color: var(--paper-dim); font-size: 15px; line-height: 1.55; }
+.plan ol { list-style: none; margin: 28px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.plan li { padding: 16px 16px 14px; border-radius: 14px; background: rgba(255, 244, 220, 0.05); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.plan-tag { align-self: flex-start; padding: 3px 8px; border-radius: 999px; background: rgba(255, 181, 71, 0.14); color: var(--saffron); font-size: 9.5px; }
+.plan h4 { font: 600 15.5px/1.3 var(--sans); color: var(--paper); }
+.plan li > p { font-size: 13.5px; line-height: 1.5; color: var(--paper-dim); }
+.plan-metas { margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--line); display: grid; gap: 7px; }
+.plan-metas p { font-size: 12.5px; line-height: 1.45; color: var(--paper); }
+.plan-metas .mono { display: block; font-size: 9px; color: var(--paper-faint); margin-bottom: 1px; }
+@media (max-width: 760px) { .plan ol { grid-template-columns: 1fr; } }

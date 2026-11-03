@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useRef, useState, type CSSProperties, type PointerEvent as RPointerEvent } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useProgress } from "@react-three/drei";
-import { CHAPTER_COUNT_WORD, DECKS, EXHIBITS, ME, STOPS } from "../content";
+import { CHAPTER_COUNT_WORD, DECKS, EXHIBITS, ME, STOPS, WISPR_PLAN } from "../content";
 import { STORIES, type Story } from "../stories";
 import { HALL_STOP, inHall, spotNear, stepDeck, type Spot } from "../game/hall";
 import { startVoiceDrive, toggleVoiceDrive, voiceDriveSupported } from "../game/voiceDrive";
@@ -41,8 +41,8 @@ export function beginRide(express: boolean) {
 }
 
 /** From the title straight to Competitions & Hackathons: the decks, the prototypes, the podium. */
-function jumpToWork() {
-  beginRide(false);
+export function jumpToWork() {
+  if (ui.get().phase === "intro") beginRide(false);
   ui.set({ coach: "done" });
   travelTo(HALL_STOP);
 }
@@ -442,8 +442,14 @@ function Controls() {
   useEffect(() => { if (express) markTip("express"); }, [express]);
   const calm = active === null && !mapOpen;
   const openMap = () => ui.set({ mapOpen: true });
+  const target = useUI((s) => s.target);
   return (
     <div className="ctrls">
+      {target !== HALL_STOP && active !== HALL_STOP && (
+        <button className="ibtn wide work" onClick={jumpToWork} aria-label="Jump straight to my work (J)" title="Jump straight to my work (J)">
+          <IconTrophy /><span>My work</span>
+        </button>
+      )}
       <Tip id="express" when={calm && seen >= 2 && !express} title="Short on time?"
         action={{ label: "Start it", run: startExpress }}
         anchor={
@@ -470,6 +476,7 @@ function Controls() {
               <li><span><kbd>F</kbd><kbd>↵</kbd></span>Get in / out of the auto</li>
               <li><span><kbd>1</kbd>–<kbd>9</kbd></span>His moves (on foot)</li>
               <li><span><kbd>B</kbd></span>Drive by voice: “chalo”, “tez”, “ruko”, “left”, “right”, “pom pom”</li>
+              <li><span><kbd>J</kbd></span>Jump straight to my work</li>
               <li><span><kbd>M</kbd></span>Route map: jump to any chapter</li>
               <li><span><kbd>H</kbd></span>Horn (cows have opinions)</li>
               <li><span><kbd>Space</kbd></span>Continue a chapter</li>
@@ -701,7 +708,7 @@ function findPhotos(i: number) {
     const st = STOPS[i], out: string[] = [];
     if (st.photo && (await loads(st.photo))) out.push(st.photo);
     for (let n = 1; n <= 8; n++) {
-      const found = await Promise.all(["jpg", "jpeg", "png", "webp"].map(async (ext) => { const u = `/photos/${st.id}-${n}.${ext}`; return (await loads(u)) ? u : null; }));
+      const found = await Promise.all(["jpg", "jpeg", "png", "webp"].map(async (ext) => { const u = `/photos/${st.gallery ?? st.id}-${n}.${ext}`; return (await loads(u)) ? u : null; }));
       const hit = found.find(Boolean);
       if (!hit) break; // numbering stops at the first gap
       out.push(hit);
@@ -974,6 +981,24 @@ function Credits() {
             {GUEST && <div><span className="mono">Passenger</span><b>{GUEST}</b></div>}
             <p>Payable in a job offer.</p>
           </div>
+          <section className="plan">
+            <p className="mono label">If you hire me · my first 90 days</p>
+            <h3>Growing Wispr Flow in India</h3>
+            <p className="plan-hook">{WISPR_PLAN.hook}</p>
+            <ol>
+              {WISPR_PLAN.ideas.map((x) => (
+                <li key={x.tag}>
+                  <span className="mono plan-tag">{x.tag}</span>
+                  <h4>{x.title}</h4>
+                  <p>{x.what}</p>
+                  <div className="plan-metas">
+                    <p><span className="mono">Measure</span>{x.measure}</p>
+                    <p><span className="mono">Why me</span>{x.proof}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
           <div className="grant">
             <p className="mono label">The oddly specific $3,000 request</p>
             <h3>{ME.setup.item}</h3>

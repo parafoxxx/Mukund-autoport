@@ -21,6 +21,34 @@ export const ME = {
   },
 };
 
+/** What I'd do first at Wispr Flow India: shown in the end credits, before the sign-off. */
+export const WISPR_PLAN = {
+  hook: "Press reports put India at #2 for Wispr Flow by users, but only a small slice of in-app revenue. The users are already here. The job is to grow them and turn them into paying ones.",
+  ideas: [
+    {
+      tag: "Influencers",
+      title: "“Bol ke likho”: a Hinglish creator programme",
+      what: "50 micro-creators in tech, study and productivity each film the same challenge: type a message vs speak it in Hinglish. Each gets their own referral link, and is paid per user who actually dictates in week one, not per view.",
+      measure: "Cost per activated user, by creator",
+      proof: "Chill Hai grew on Instagram and word of mouth, ₹0 on ads.",
+    },
+    {
+      tag: "Partnerships",
+      title: "Campus ambassadors, timed to placement season",
+      what: "Placement season is when students write the most: SOPs, cover letters, case decks, all on deadline. Ambassadors at IITs and NITs run “dictate your SOP” sessions and a case-competition track that's voice-only.",
+      measure: "Weekly active users per campus, referrals per ambassador",
+      proof: "I ran placements at IIT Kanpur: a 150+ person team, 75+ companies.",
+    },
+    {
+      tag: "Monetisation",
+      title: "Price it for India, test on one campus first",
+      what: "A rupee student plan on UPI AutoPay, plus a bundle with a telecom or laptop partner. Run it on one campus for a month against a control campus before going national.",
+      measure: "Free-to-paid conversion, test campus vs control",
+      proof: "My Groww deck was on auto-debits; my Spotify deck priced Premium for India with telecom bundles.",
+    },
+  ],
+};
+
 export type Landmark =
   | "taj" | "books" | "gate" | "climb" | "stall" | "office" | "hall" | "society" | "cinema" | "billboard";
 
@@ -57,6 +85,8 @@ export type Stop = {
   lines: string[];
   stats?: { n: string; l: string }[];
   photo?: string;        // /photos/<file>
+  gallery?: string;      // chapter photos are public/photos/<gallery>-1..8 (default: the id)
+  across?: Landmark;     // a second landmark, across the road from the first
   link?: { label: string; url: string; embed?: boolean }; // a button on the chapter card (embed: opens inside the ride)
   walkIn?: boolean;      // a place you can walk into and explore (the chapter card offers it)
   keywords: string[];    // what you can say to the driver to go here
@@ -67,18 +97,12 @@ export type Stop = {
 
 export const STOPS: Stop[] = [
   {
-    id: "agra", name: "Agra", landmark: "taj", color: "#ffcc00", sticker: "🕌",
-    title: "Agra. Where it all started.",
-    lines: ["Grew up in the city of the Taj.", "Till class 10 I was an average student. Not bad, not great. Very mid."],
-    photo: "/photos/agra.jpg", keywords: ["agra", "taj", "home", "ghar", "start", "shuru"],
+    id: "agra", name: "Agra", landmark: "taj", across: "books", color: "#ffcc00", sticker: "🕌",
+    title: "Agra. Then the JEE grind.",
+    lines: ["Grew up in the city of the Taj. Till class 10, a very mid student.", "Then I decided mid wasn't the plan. Two years of JEE: books, mocks, repeat."],
+    photo: "/photos/agra.jpg", gallery: "jee",
+    keywords: ["agra", "taj", "home", "ghar", "start", "shuru", "jee", "coaching", "padhai", "study", "books", "kota"],
     act: "pose", quip: "Agra se hoon. Taj Mahal mera padosi hai.",
-  },
-  {
-    id: "jee", name: "JEE Grind", landmark: "books", color: "#00a19a", sticker: "📚",
-    title: "Then something switched.",
-    lines: ["After class 10 I decided mid wasn't the plan.", "Studied hard for JEE. Books, mocks, repeat."],
-    photo: "/photos/jee.jpg", keywords: ["jee", "coaching", "padhai", "study", "books", "kota"],
-    act: "box", quip: "JEE vs Mukund. Do saal, har round. Main jeeta.",
   },
   {
     id: "iitk", name: "IIT Kanpur", landmark: "gate", color: "#e53935", sticker: "🎓",
