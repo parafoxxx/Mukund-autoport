@@ -1,6 +1,7 @@
 /**
  * Drive by voice: an always-on mic that turns spoken words into driving, word by word as you say them.
- * "move" (or "chalo") to go, "tez" faster, "dheere" slower, "ruko" stop, "left" / "right", "peeche" back, "pom pom" to honk,
+ * In plain English, so any speech service gets it right: "move" to go, "faster", "slowly", "stop", "left" / "right",
+ * "back", "horn". The Hindi words ("chalo", "tez", "dheere", "ruko", "peeche", "pom pom") still work too.
  * "Chill Hai le chalo" to head to a chapter, and anything you ask Mukund goes to him.
  *
  * Two ears. First choice: record each phrase and transcribe it on the server (api/stt, Sarvam AI), which
@@ -37,12 +38,12 @@ const CRUISE = 12, TOP = 21;
 // Indian-English recognisers spell Hindi words many ways, so each command lists the usual ones
 const WORDS: [RegExp, () => void][] = [
   [/^(chalo|challo|chalu|charlo|chalein|chal|chalte|chello|go|start|drive|aage|aagey|age|forward|move|moves|moving|mood|moon|मूव|चलो|चल|आगे)$/, () => go()],
-  [/^(tez|tej|tes|test|taze|fast|faster|speed|jaldi|jaldee|zoom|bhagao|तेज़|तेज|जल्दी)$/, () => { if (!started()) go(); sim.vd.speed = Math.min(TOP, Math.max(sim.vd.speed, CRUISE) + 5); }],
-  [/^(dheere|dhire|dheeray|deere|slow|slower|aaram|araam|धीरे)$/, () => { sim.vd.speed = Math.max(5, sim.vd.speed - 5); }],
-  [/^(ruko|ruk|roko|rook|rocco|rukho|stop|brake|break|bas|bus|hold|thamo|रुको|रुक|बस|स्टॉप)$/, () => { sim.vd.speed = 0; }],
+  [/^(tez|tej|tes|test|taze|fast|faster|quick|quicker|quickly|speed|jaldi|jaldee|zoom|bhagao|तेज़|तेज|जल्दी)$/, () => { if (!started()) go(); sim.vd.speed = Math.min(TOP, Math.max(sim.vd.speed, CRUISE) + 5); }],
+  [/^(dheere|dhire|dheeray|deere|slow|slower|slowly|slowdown|aaram|araam|धीरे)$/, () => { sim.vd.speed = Math.max(5, sim.vd.speed - 5); }],
+  [/^(ruko|ruk|roko|rook|rocco|rukho|stop|stopp|halt|wait|brake|break|bas|bus|hold|thamo|रुको|रुक|बस|स्टॉप)$/, () => { sim.vd.speed = 0; }],
   [/^(left|lift|baaye|baye|bayen|baen|baaen|लेफ्ट|बाएं|बाएँ)$/, () => turn(1)],
   [/^(right|write|daaye|daye|dayen|daaen|dahine|राइट|दाएं|दाएँ)$/, () => turn(-1)],
-  [/^(peeche|piche|pichhe|peechay|back|reverse|पीछे)$/, () => { started(); sim.vd.speed = -5; }],
+  [/^(peeche|piche|pichhe|peechay|back|backward|backwards|reverse|पीछे)$/, () => { started(); sim.vd.speed = -5; }],
   [/^(pom|pompom|bom|bomb|horn|honk|beep|bajao|popo|पोम|हॉर्न)$/, () => horn()],
   [/^(map|naksha)$/, () => ui.set({ mapOpen: !ui.get().mapOpen })],
 ];
@@ -97,7 +98,7 @@ function onPhrase(text: string, hadCommand: boolean) {
   if (TRIP.test(text) && ANYWHERE.test(text)) return tripTo(ui.get().nextStop);
   if (HELLO.test(text)) { ui.set({ reply: "Namaste! Say “move” and we’re off." }); return; }
   // heard, but nothing to act on: say what it heard and what it understands, instead of doing nothing
-  if (!hadCommand) ui.set({ reply: `Heard “${text.replace(/[.!?]+$/, "")}”. Try “move”, “left”, “ruko”, or “take me to NoBroker”.` });
+  if (!hadCommand) ui.set({ reply: `Heard “${text.replace(/[.!?]+$/, "")}”. Try “move”, “left”, “stop”, or “take me to NoBroker”.` });
 }
 
 const status = (voiceStatus: string) => ui.set({ voiceStatus });

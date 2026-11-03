@@ -16,7 +16,7 @@ function overLimit(ip: string) {
 
 // words we want Sarvam to catch: the driving commands and the chapter names
 const KEYTERMS = [
-  "move", "chalo", "tez", "dheere", "ruko", "left", "right", "peeche", "pom pom", "le chalo", "Mukund",
+  "move", "faster", "slowly", "stop", "back", "horn", "chalo", "tez", "dheere", "ruko", "left", "right", "peeche", "pom pom", "le chalo", "Mukund",
   ...STOPS.map((s) => s.name),
 ].slice(0, 50);
 
@@ -41,6 +41,8 @@ export async function stt(audio: ArrayBuffer, type: string, ip: string): Promise
     r = await fetch("https://api.sarvam.ai/speech-to-text", { method: "POST", headers: { "api-subscription-key": sarvam }, body: form });
   } else {
     form.append("model_id", process.env.ELEVENLABS_STT_MODEL || "scribe_v2");
+    // the commands are English words: say so, rather than let it guess (and answer in Devanagari)
+    form.append("language_code", process.env.ELEVENLABS_STT_LANGUAGE || "en");
     r = await fetch("https://api.elevenlabs.io/v1/speech-to-text", { method: "POST", headers: { "xi-api-key": eleven! }, body: form });
   }
   if (!r.ok) {

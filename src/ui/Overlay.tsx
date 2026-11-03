@@ -561,7 +561,7 @@ function Controls() {
               <li><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span>Walk, or drive the auto</li>
               <li><span><kbd>F</kbd><kbd>↵</kbd></span>Get in / out of the auto</li>
               <li><span><kbd>1</kbd>–<kbd>9</kbd></span>His moves (on foot)</li>
-              <li><span><kbd>B</kbd></span>Drive by voice: “move”, “tez”, “ruko”, “left”, “right”, “pom pom”</li>
+              <li><span><kbd>B</kbd></span>Drive by voice: “move”, “faster”, “slowly”, “stop”, “left”, “right”, “horn”</li>
               <li><span><kbd>J</kbd></span>Jump straight to my work</li>
               <li><span><kbd>M</kbd></span>Route map: jump to any chapter</li>
               <li><span><kbd>H</kbd></span>Horn (cows have opinions)</li>
@@ -753,14 +753,14 @@ function VoiceDrivePill() {
           <span className="voice-txt">Drive by voice</span>{!coarse && <kbd>B</kbd>}
         </button>
       }>
-      Say “move”, “left”, “ruko”, or “take me to NoBroker”.
+      Say “move”, “left”, “stop”, or “take me to NoBroker”.
     </Tip>
   );
   return (
     <button className="glass vd-panel" onClick={toggleVoiceDrive} aria-label="Stop driving by voice">
       <span className="vd-head"><i className="vd-dot" />{status || "Listening"}</span>
-      <span className="vd-heard">{heard ? `“${heard}”` : "Say “move”, “tez”, “ruko”…"}</span>
-      <span className="mono vd-words">move · tez · dheere · ruko · left · right · pom pom · map{!coarse && " · B to stop"}</span>
+      <span className="vd-heard">{heard ? `“${heard}”` : "Say “move”, “faster”, “stop”…"}</span>
+      <span className="mono vd-words">move · faster · slowly · stop · left · right · back · horn · map{!coarse && " · B to stop"}</span>
     </button>
   );
 }
