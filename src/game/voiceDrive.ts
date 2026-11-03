@@ -119,7 +119,7 @@ function useBrowserEar() {
   ui.set({ reply: "This browser can't do speech recognition. Open the site in Chrome or Edge to drive by voice." });
 }
 
-export function stopVoiceDrive() {
+function stopVoiceDrive() {
   ui.set({ voiceDrive: false, voiceHeard: "", voiceStatus: "" });
   sim.vd.speed = 0; sim.vd.steerT = 0;
   mode = null;

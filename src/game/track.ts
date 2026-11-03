@@ -53,7 +53,7 @@ export function roadHeading(u: number) {
   return Math.atan2(t.x, t.z);
 }
 
-export const LANDMARK_SIZE: Record<string, { offset: number; radius: number }> = {
+const LANDMARK_SIZE: Record<string, { offset: number; radius: number }> = {
   taj: { offset: 36, radius: 19 }, books: { offset: 14, radius: 9 }, gate: { offset: 30, radius: 18 },
   climb: { offset: 15, radius: 8 }, stall: { offset: 12, radius: 7.5 },
   hall: { offset: 25, radius: 15.5 },

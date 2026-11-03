@@ -35,7 +35,7 @@ export function unlock(id: BadgeId) {
 }
 
 /** Running tallies behind the counting badges. */
-export const tally = { matkas: 0, cones: 0, coins: 0, jumps: 0, tricks: 0 };
+const tally = { matkas: 0, cones: 0, coins: 0, jumps: 0, tricks: 0 };
 
 export function count(k: keyof typeof tally) {
   const n = ++tally[k];

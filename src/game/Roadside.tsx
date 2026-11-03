@@ -7,7 +7,6 @@ import { sim, ui, useUI } from "./store";
 import { COLLIDERS, ROAD_HALF, SAMPLES, SAMPLE_COUNT, STOP_POS, STOP_U, roadHeading, rng } from "./track";
 
 export const FONT_SERIF = "/fonts/DMSerifDisplay-Regular.ttf";
-export const FONT_SERIF_ITALIC = "/fonts/DMSerifDisplay-Italic.ttf";
 export const FONT_MONO = "/fonts/SpaceMono-Bold.ttf";
 
 /* ---------- Indian highway milestones mark each chapter ---------- */

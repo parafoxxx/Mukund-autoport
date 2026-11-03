@@ -59,7 +59,7 @@ const STROLL = 3.4;
 
 /** True while he's busy getting in, getting out or walking to his mark (the controls wait). */
 export const scripted = () => script.length > 0;
-export function runScript(steps: Step[]) { script = steps; started = false; }
+function runScript(steps: Step[]) { script = steps; started = false; }
 export function cancelScript() { script = []; started = false; walker.pos.y = 0; }
 
 const autoFwd = () => new THREE.Vector3(Math.sin(sim.heading), 0, Math.cos(sim.heading));

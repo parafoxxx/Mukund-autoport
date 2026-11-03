@@ -31,7 +31,7 @@ function voiceStudio(): Plugin {
   };
 }
 
-/** Dev-only: serves api/stt locally, the same code Vercel runs in production. */
+/** Dev-only: serves /api/stt locally, the same code the Netlify function runs in production. */
 function apiRoutes(): Plugin {
   return {
     name: "api-routes",

@@ -84,7 +84,7 @@ export async function probeVoices(ids: string[]) {
 }
 
 /** Registers a clip under an id once its length is known (recorded lines, and his AI replies). */
-export async function addVoice(id: string, url: string) {
+async function addVoice(id: string, url: string) {
   const el = new Audio();
   el.preload = "metadata";
   await new Promise<void>((res) => { el.onloadedmetadata = () => res(); el.onerror = () => res(); el.src = url; });

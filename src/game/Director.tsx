@@ -17,7 +17,7 @@ const dist = (i: number) => { const f = focus(); return Math.hypot(STOP_POS[i].x
 /** The controls only count as "let me drive on" once they've been let go after the chapter opened. */
 let armed = false, chapterT = 0;
 
-export function openStop(i: number) {
+function openStop(i: number) {
   const s = ui.get();
   armed = false; chapterT = 0;
   sim.lastStop = i;

@@ -41,7 +41,7 @@ export function beginRide(express: boolean) {
 }
 
 /** From the title straight to Competitions & Hackathons: the decks, the prototypes, the podium. */
-export function jumpToWork() {
+function jumpToWork() {
   beginRide(false);
   ui.set({ coach: "done" });
   travelTo(HALL_STOP);
@@ -62,7 +62,7 @@ export function resetToRoad() {
   ui.set({ offroad: false });
 }
 
-export function goTo(i: number) {
+function goTo(i: number) {
   closeStop();
   board();
   ui.set({ target: i, express: false, reply: `Heading to ${STOPS[i].name}.` });

@@ -51,7 +51,6 @@ function autopilot(target: number, dt: number): [number, number] {
 let hornCooldown = 0;
 function follow(dt: number): [number, number] {
   if (unstickFor > 0) { unstickFor -= dt; return [-1, unstickSteer]; }
-  // inside the hall he's on his own: the auto waits outside the door
   // near or inside the hall he's on his own: the auto goes to its spot by the door, out of the camera's way
   const e = ENTRANCE(), nearDoor = Math.hypot(walker.pos.x - e.x, walker.pos.z - e.z) < 12;
   const goal = inHall(walker.pos) || nearDoor ? PARKING() : walker.pos;

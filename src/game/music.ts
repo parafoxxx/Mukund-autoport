@@ -33,7 +33,7 @@ const THEKAS: string[][] = [
 let ctx: AudioContext | null = null;
 let bus: GainNode | null = null, verbIn: GainNode | null = null;
 let noise: AudioBuffer | null = null;
-let timer = 0, nextTime = 0, step = 0;
+let nextTime = 0, step = 0;
 let mood: Mood = "intro";
 let prog = PROGRESSIONS[0], theka = THEKAS[0], lead: "santoor" | "bansuri" = "santoor";
 let phrase: { at: number; deg: number; len: number }[] = [], motif: number[] = [];
@@ -60,10 +60,9 @@ export function startMusic() {
   const d = noise.getChannelData(0);
   for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   nextTime = ctx.currentTime + 0.1;
-  timer = window.setInterval(schedule, 25);
+  window.setInterval(schedule, 25); // runs for the life of the page
 }
 
-export function stopMusic() { window.clearInterval(timer); }
 
 /* ---------- the conductor ---------- */
 

@@ -18,19 +18,17 @@ export const BOOTH = {
   sarvam: new THREE.Vector3(8.6, 0, -1.5),
   pacto: new THREE.Vector3(0, 0, -3.2),
 };
-export const DECK_SPACING = 2.95;
+const DECK_SPACING = 2.95;
 export const deckX = (i: number) => (i - (DECKS.length - 1) / 2) * DECK_SPACING;
 export const COLUMNS_Z = [-10, -5, 0, 5, 10];
 
 const placement = HALL_STOP >= 0 ? PLACEMENTS[HALL_STOP] : null;
 const UP = new THREE.Vector3(0, 1, 0);
 /** Hall coordinates to world coordinates. */
-export function toWorld(x: number, z: number) {
+function toWorld(x: number, z: number) {
   if (!placement) return new THREE.Vector3(x, 0, z);
   return new THREE.Vector3(x, 0, z).applyAxisAngle(UP, placement.rotY).add(placement.pos);
 }
-export const hallYaw = () => placement?.rotY ?? 0;
-
 /** Just outside the entrance, facing in: where "Walk in" puts him. */
 export const ENTRANCE = () => toWorld(0, HALL.doorZ + 4.5);
 /** Where the auto waits while he looks around, clear of the hall. */
@@ -49,7 +47,7 @@ export type Spot =
   | { kind: "deck"; index: number; at: THREE.Vector3; reach: number }
   | { kind: "booth"; exhibit: Exhibit["id"]; at: THREE.Vector3; reach: number };
 
-export const SPOTS: Spot[] = placement ? [
+const SPOTS: Spot[] = placement ? [
   ...DECKS.map((_, i) => ({ kind: "deck" as const, index: i, at: toWorld(deckX(i), HALL.wallZ + 1.6), reach: 1.7 })),
   { kind: "booth", exhibit: "meesho", at: toWorld(BOOTH.meesho.x, BOOTH.meesho.z + 3.4), reach: 3.4 },
   { kind: "booth", exhibit: "sarvam", at: toWorld(BOOTH.sarvam.x, BOOTH.sarvam.z + 3.4), reach: 3.4 },
