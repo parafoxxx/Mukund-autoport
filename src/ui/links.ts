@@ -8,6 +8,7 @@ export const CHARMS: LinkCharm[] = [
   { id: "linkedin", label: "LinkedIn", url: ME.links.linkedin },
   { id: "github", label: "GitHub", url: ME.links.github },
   { id: "letterboxd", label: "Letterboxd", url: ME.links.letterboxd },
+  { id: "spotify", label: "Spotify", url: ME.links.spotify },
   { id: "email", label: "Email", url: ME.links.email },
 ];
 /** A temple bell, then the link. */
@@ -42,6 +43,13 @@ export function charmCanvas(id: string) {
     ring("#202830");
     ([["#ff8000", 78], ["#00e054", 128], ["#40bcf4", 178]] as const).forEach(([col, x]) => { g.fillStyle = col; g.globalAlpha = 0.92; g.beginPath(); g.arc(x, 128, 30, 0, Math.PI * 2); g.fill(); });
     g.globalAlpha = 1;
+  } else if (id === "spotify") {
+    ring("#1db954");
+    // the three sound waves, widest at the top
+    g.strokeStyle = "#191414"; g.lineCap = "round";
+    ([[66, 104, 16], [50, 140, 13], [36, 172, 11]] as const).forEach(([r, y, w]) => {
+      g.lineWidth = w; g.beginPath(); g.ellipse(128, y + r * 0.9, r * 1.2, r * 0.9, 0, Math.PI * 1.18, Math.PI * 1.82); g.stroke();
+    });
   } else {
     ring("#e8902a");
     g.strokeStyle = "#fff"; g.lineWidth = 12; g.lineJoin = "round";

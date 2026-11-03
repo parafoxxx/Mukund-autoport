@@ -626,7 +626,7 @@ kbd {
 .plink:hover { background: rgba(255, 244, 220, 0.16); transform: translateY(-1px); }
 .plink i { width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25); }
 .plink-linkedin i { background: #0a66c2; } .plink-github i { background: #171515; } .plink-instagram i { background: linear-gradient(45deg, #feda75, #fa7e1e, #d62976, #4f5bd5); }
-.plink-letterboxd i { background: conic-gradient(#ff8000 0 33%, #00e054 0 66%, #40bcf4 0); } .plink-email i { background: #e8902a; }
+.plink-letterboxd i { background: conic-gradient(#ff8000 0 33%, #00e054 0 66%, #40bcf4 0); } .plink-spotify i { background: #1db954; } .plink-email i { background: #e8902a; }
 @media (max-width: 760px) { .profile { top: auto; bottom: 24px; transform: none; left: 16px; right: 16px; max-width: none; } }
 
 /* ---------- title screen: the "click me" tag beside him ---------- */

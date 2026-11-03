@@ -28,7 +28,7 @@ const drape = (t: number) => {
   return [u * u * a[0] + 2 * u * t * c[0] + t * t * b[0], u * u * a[1] + 2 * u * t * c[1] + t * t * b[1]] as const;
 };
 const FLOWERS = Array.from({ length: 30 }, (_, k) => drape(k / 29));
-const CHARM_T = [0.2, 0.35, 0.5, 0.65, 0.8];
+const CHARM_T = CHARMS.map((_, k) => 0.16 + (0.68 * k) / (CHARMS.length - 1)); // spread evenly along the drape
 
 /** A lit diya, to sit in his right hand. */
 function Diya() {
@@ -90,7 +90,7 @@ export function MirrorScene({ scene }: { scene: THREE.Object3D }) {
     charms.current.forEach((m, k) => {
       if (!m) return;
       m.rotation.z = Math.sin(clock.elapsedTime * 1.5 + k) * 0.07;
-      const s = (k === 2 ? 0.075 : 0.064) * (hovered.current === k ? 1.2 : 1);
+      const s = 0.062 * (hovered.current === k ? 1.2 : 1);
       m.scale.set(s, s, s);
     });
   });

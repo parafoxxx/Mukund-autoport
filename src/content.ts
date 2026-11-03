@@ -13,6 +13,7 @@ export const ME = {
     github: "https://github.com/parafoxxx",
     instagram: "https://www.instagram.com/mvkndd/",
     letterboxd: "https://letterboxd.com/mvkndd",
+    spotify: "https://open.spotify.com/user/31sib4fwtzfjvjaneamdotpquziu",
     video: "#", // your 3-minute build video
   },
   // Your oddly specific $3,000 setup request. TODO: make it yours.
