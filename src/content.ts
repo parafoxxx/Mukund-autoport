@@ -8,11 +8,11 @@ export const ME = {
   first: "Mukund",
   plate: "UP 80 · MS 27",
   links: {
-    linkedin: "https://linkedin.com/in/mukund-singhal",
-    email: "mailto:mukunds23@iitk.ac.in",
+    linkedin: "https://www.linkedin.com/in/mukund-singhal-7a2289259/",
+    email: "mailto:mkndsnghl@gmail.com",
     github: "https://github.com/parafoxxx",
-    instagram: "https://www.instagram.com/chill_hai.official/", // TODO: your personal Instagram
-    letterboxd: "https://letterboxd.com/mvkndd/",
+    instagram: "https://www.instagram.com/mvkndd/",
+    letterboxd: "https://letterboxd.com/mvkndd",
     video: "#", // your 3-minute build video
   },
   // Your oddly specific $3,000 setup request. TODO: make it yours.
