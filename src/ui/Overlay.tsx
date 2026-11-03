@@ -18,6 +18,7 @@ import { RouteMap, travelTo } from "./RouteMap";
 import { MiniMap } from "./MiniMap";
 import { markTip, Tip } from "./Tip";
 import { CHARMS, openCharm } from "./links";
+import { FourthWall } from "./FourthWall";
 import { onCounts, riderNumber, track, type Counts } from "../game/counter";
 import { dictate, dictateSupported, stopDictation, type DictateState } from "../game/dictate";
 import { sayOnBillboard } from "../game/store";
@@ -96,6 +97,7 @@ export function Overlay() {
       <Bubble />
       <AnimatePresence>{phase === "finale" && <Credits key="credits" />}</AnimatePresence>
       <AvatarPrompt />
+      <FourthWall />
       <Loader />
     </>
   );
@@ -991,7 +993,7 @@ function BoardPrompt() {
         <motion.button className="board-prompt" onClick={() => { const m = toggleAuto(); if (m) ui.set({ reply: m }); }}
           initial={{ opacity: 0, y: 16, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.45, ease: EASE }}>
           <span className="bp-key">{coarse ? "Tap" : "F"}</span>
-          <span><b>{near ? "Get in your auto" : "Walk to your auto"}</b>{near ? (coarse ? " and the ride begins" : " · or press Enter") : " · it’s parked right behind you"}</span>
+          <span><b>{near ? "Get in your auto" : "Walk to your auto"}</b>{near ? (coarse ? " and the ride begins" : " · or press Enter") : " · it’s waiting nearby"}</span>
         </motion.button>
       )}
     </AnimatePresence>
