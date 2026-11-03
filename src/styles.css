@@ -583,3 +583,9 @@ kbd {
 .plan-metas p { font-size: 12.5px; line-height: 1.45; color: var(--paper); }
 .plan-metas .mono { display: block; font-size: 9px; color: var(--paper-faint); margin-bottom: 1px; }
 @media (max-width: 760px) { .plan ol { grid-template-columns: 1fr; } }
+
+/* ---------- chapter cards: what I did ---------- */
+.ch-points { list-style: none; margin: 4px 0 12px; padding: 0; display: grid; gap: 7px; max-width: 540px; }
+.ch-points li { position: relative; padding-left: 20px; font: 400 15px/1.5 var(--sans); color: var(--paper-dim); }
+.ch-points li::before { content: ""; position: absolute; left: 2px; top: 0.62em; width: 8px; height: 8px; border-radius: 2px; background: var(--c, var(--saffron)); transform: rotate(45deg); }
+@media (max-width: 760px) { .ch-points li { font-size: 13.5px; } }

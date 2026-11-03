@@ -3,11 +3,11 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { BOUNDS, COLLIDERS, CURVE, ROAD_HALF, rng, roadHeading } from "./track";
 import { sim, ui, walker } from "./store";
-import { bonk, moo } from "./sound";
+import { bonk } from "./sound";
 import { unlock } from "./achievements";
 import { featureAt, GAPS } from "./Toys";
 
-/* Life on the road: cows who own it, kites over it. */
+/* Life on the road: cows who own it, dogs who patrol it, goats who don't care, kites over it. */
 
 const focus = () => (ui.get().onFoot ? walker.pos : sim.pos);
 const roadFrame = (u: number) => {
@@ -34,7 +34,7 @@ function solid(x: number, z: number, r: number) {
 }
 
 /* ---------- cows: grazing in the fields beside the road ---------- */
-type Cow = { home: THREE.Vector3; away: THREE.Vector3; pos: THREE.Vector3; target: THREE.Vector3; h: number; t: number; mooIn: number; walk: number; pace: number };
+type Cow = { home: THREE.Vector3; away: THREE.Vector3; pos: THREE.Vector3; target: THREE.Vector3; h: number; t: number; walk: number; pace: number };
 
 function buildCows(): Cow[] {
   const r = rng(11), cows: Cow[] = [];
@@ -48,7 +48,7 @@ function buildCows(): Cow[] {
       if (COLLIDERS.some((c) => (c.x - home.x) ** 2 + (c.z - home.z) ** 2 < (c.r + 3) ** 2)) continue; // not in a tree
       cows.push({
         home, away: right.clone().multiplyScalar(side), pos: home.clone(), target: home.clone(),
-        h: h + (r() - 0.5) * 3, t: 3 + r() * 8, mooIn: 4 + r() * 12, walk: 0, pace: 0.7,
+        h: h + (r() - 0.5) * 3, t: 3 + r() * 8, walk: 0, pace: 0.7,
       });
     }
   });
@@ -67,15 +67,11 @@ function Cows() {
     honks.current = sim.honks;
     cows.forEach((c, i) => {
       const dist = Math.hypot(f.x - c.pos.x, f.z - c.pos.z);
-      // honk nearby: a moo of protest and a trot further out into the field
+      // honk nearby: a trot further out into the field
       if (honked && dist < 24 && s.phase === "ride") {
-        c.mooIn = 0.3; c.pace = 2.1; c.t = 6;
+        c.pace = 2.1; c.t = 6;
         c.target.copy(c.home).addScaledVector(c.away, 3 + Math.random() * 3);
         unlock("cow");
-      }
-      if (c.mooIn > 0) {
-        c.mooIn -= dt;
-        if (c.mooIn <= 0) { if (dist < 30) moo(); c.mooIn = 10 + Math.random() * 16; }
       }
       // graze a while, then amble to another patch nearby (never back onto the road)
       c.t -= dt;
@@ -92,7 +88,7 @@ function Cows() {
         const step = Math.min(d, c.pace * dt);
         c.pos.x += (dx / d) * step; c.pos.z += (dz / d) * step; c.walk = c.pace > 1 ? 1.4 : 1;
       }
-      if (s.phase === "ride" && solid(c.pos.x, c.pos.z, 0.9)) moo();
+      if (s.phase === "ride") solid(c.pos.x, c.pos.z, 0.9);
       const g = refs.current[i];
       if (g) { g.position.copy(c.pos); g.rotation.y = c.h; }
       legs.current[i]?.forEach((leg, k) => { if (leg) leg.rotation.x = Math.min(1, c.walk) * Math.sin(t * 7 * c.walk + (k % 2 ? Math.PI : 0) + (k > 1 ? Math.PI : 0)) * 0.45; });
@@ -134,6 +130,136 @@ function CowBody({ legRefs, headRef }: { legRefs: (k: number, el: THREE.Group | 
         {[-1, 1].map((sd) => <mesh key={sd} position={[sd * 0.22, 0.08, 0.1]} rotation-z={sd * 0.9} material={COW_WHITE}><boxGeometry args={[0.16, 0.06, 0.1]} /></mesh>)}
       </group>
       <mesh position={[0, 1.05, -0.78]} rotation-x={0.4} material={COW_DARK}><boxGeometry args={[0.05, 0.6, 0.05]} /></mesh>
+    </group>
+  );
+}
+
+/* ---------- dogs and goats: smaller, quicker, in every stretch without cows ---------- */
+type Critter = { kind: "dog" | "goat"; home: THREE.Vector3; pos: THREE.Vector3; target: THREE.Vector3; h: number; t: number; walk: number; pace: number; sit: number };
+
+function buildCritters(): Critter[] {
+  const r = rng(23), out: Critter[] = [];
+  GAPS.forEach(([a, b], gap) => {
+    if (featureAt(gap).includes("cows")) return;
+    const kind = gap % 2 ? "goat" : "dog";
+    const n = kind === "dog" ? 2 : 3;
+    for (let k = 0; k < n; k++) {
+      const { p, right } = roadFrame(a + (b - a) * (0.3 + k * 0.18 + r() * 0.06));
+      const side = (gap + k) % 2 ? 1 : -1;
+      const home = p.clone().addScaledVector(right, side * (ROAD_HALF + (kind === "dog" ? 2.5 : 6) + r() * 5));
+      if (COLLIDERS.some((c) => (c.x - home.x) ** 2 + (c.z - home.z) ** 2 < (c.r + 2) ** 2)) continue;
+      out.push({ kind, home, pos: home.clone(), target: home.clone(), h: r() * 6.28, t: r() * 5, walk: 0, pace: 1, sit: 0 });
+    }
+  });
+  return out;
+}
+
+function Critters() {
+  const all = useMemo(buildCritters, []);
+  const refs = useRef<(THREE.Group | null)[]>([]);
+  const legs = useRef<(THREE.Group | null)[][]>([]);
+  const tails = useRef<(THREE.Group | null)[]>([]);
+  const bodies = useRef<(THREE.Group | null)[]>([]);
+  const honks = useRef(sim.honks);
+  useFrame(({ clock }, raw) => {
+    const dt = Math.min(raw, 0.05), s = ui.get(), f = focus(), t = clock.elapsedTime;
+    const honked = sim.honks !== honks.current;
+    honks.current = sim.honks;
+    all.forEach((c, i) => {
+      const dist = Math.hypot(f.x - c.pos.x, f.z - c.pos.z);
+      if (dist > 90) return; // too far to see: don't bother
+      // dogs trot over to see who's coming; a honk sends everyone scampering
+      if (honked && dist < 22) { c.pace = 3.2; c.t = 3; c.sit = 0; c.target.copy(c.home).add(new THREE.Vector3(c.pos.x - f.x, 0, c.pos.z - f.z).setLength(5)); }
+      c.t -= dt;
+      if (c.t <= 0) {
+        c.t = 3 + Math.random() * 6; c.pace = c.kind === "dog" ? 1.6 : 0.6;
+        c.sit = c.kind === "dog" && Math.random() < 0.35 ? 1 : 0;
+        const curious = c.kind === "dog" && dist < 16 && Math.random() < 0.6;
+        const a = Math.random() * Math.PI * 2, rr = Math.random() * 3;
+        if (curious) c.target.set(c.home.x + (f.x - c.home.x) * 0.35, 0, c.home.z + (f.z - c.home.z) * 0.35);
+        else c.target.set(c.home.x + Math.cos(a) * rr, 0, c.home.z + Math.sin(a) * rr);
+      }
+      c.walk = 0;
+      const dx = c.target.x - c.pos.x, dz = c.target.z - c.pos.z, d = Math.hypot(dx, dz);
+      if (d > 0.15 && !(c.sit && d < 1)) {
+        const want = Math.atan2(dx, dz);
+        c.h += Math.atan2(Math.sin(want - c.h), Math.cos(want - c.h)) * Math.min(1, dt * 4);
+        const step = Math.min(d, c.pace * dt);
+        c.pos.x += (dx / d) * step; c.pos.z += (dz / d) * step; c.walk = c.pace > 2 ? 1.6 : 1;
+      }
+      if (s.phase === "ride") solid(c.pos.x, c.pos.z, 0.45);
+      const g = refs.current[i];
+      if (g) { g.position.copy(c.pos); g.rotation.y = c.h; }
+      const sitting = c.sit && !c.walk;
+      const bd = bodies.current[i];
+      if (bd) bd.rotation.x = THREE.MathUtils.lerp(bd.rotation.x, sitting ? -0.45 : 0, Math.min(1, dt * 6));
+      legs.current[i]?.forEach((leg, k) => { if (leg) leg.rotation.x = Math.min(1, c.walk) * Math.sin(t * 11 * c.walk + (k % 2 ? Math.PI : 0) + (k > 1 ? Math.PI : 0)) * 0.55; });
+      const tl = tails.current[i];
+      if (tl) tl.rotation.y = c.kind === "dog" ? Math.sin(t * (dist < 14 ? 16 : 6) + i) * 0.6 : Math.sin(t * 3 + i) * 0.2; // a dog wags harder when you're near
+    });
+  });
+  return (
+    <group>
+      {all.map((c, i) => (
+        <group key={i} ref={(el) => { refs.current[i] = el; }}>
+          <group ref={(el) => { bodies.current[i] = el; }}>
+            {c.kind === "dog"
+              ? <DogBody coat={["#c8925a", "#e0c08f", "#3a2a20", "#a8744a"][i % 4]} legRef={(k, el) => { (legs.current[i] ??= [])[k] = el; }} tailRef={(el) => { tails.current[i] = el; }} />
+              : <GoatBody coat={i % 3 ? "#f1ece2" : "#4a3b31"} legRef={(k, el) => { (legs.current[i] ??= [])[k] = el; }} tailRef={(el) => { tails.current[i] = el; }} />}
+          </group>
+        </group>
+      ))}
+    </group>
+  );
+}
+
+type BodyProps = { coat: string; legRef: (k: number, el: THREE.Group | null) => void; tailRef: (el: THREE.Group | null) => void };
+
+/** An Indian street dog: lean, tan, ears up, tail curled. */
+function DogBody({ coat, legRef, tailRef }: BodyProps) {
+  const fur = useMemo(() => new THREE.MeshStandardMaterial({ color: coat, roughness: 0.95 }), [coat]);
+  return (
+    <group>
+      <mesh position={[0, 0.52, 0]} material={fur} castShadow><boxGeometry args={[0.28, 0.28, 0.78]} /></mesh>
+      <mesh position={[0, 0.5, 0.3]} material={fur} castShadow><boxGeometry args={[0.3, 0.32, 0.26]} /></mesh>
+      {[[-0.1, 0.28], [0.1, 0.28], [-0.1, -0.28], [0.1, -0.28]].map(([x, z], k) => (
+        <group key={k} ref={(el) => legRef(k, el)} position={[x, 0.42, z]}>
+          <mesh position-y={-0.21} material={fur} castShadow><boxGeometry args={[0.07, 0.42, 0.07]} /></mesh>
+        </group>
+      ))}
+      <group position={[0, 0.72, 0.46]}>
+        <mesh position={[0, 0, 0.06]} material={fur} castShadow><boxGeometry args={[0.24, 0.22, 0.24]} /></mesh>
+        <mesh position={[0, -0.04, 0.23]} material={fur}><boxGeometry args={[0.13, 0.11, 0.16]} /></mesh>
+        <mesh position={[0, -0.02, 0.315]}><boxGeometry args={[0.06, 0.05, 0.02]} /><meshStandardMaterial color="#1a1208" /></mesh>
+        {[-1, 1].map((sd) => <mesh key={sd} position={[sd * 0.08, 0.15, 0.02]} rotation-z={sd * -0.25} material={fur}><coneGeometry args={[0.045, 0.13, 4]} /></mesh>)}
+      </group>
+      <group ref={tailRef} position={[0, 0.62, -0.38]}>
+        <mesh position={[0, 0.12, -0.04]} rotation-x={-0.6} material={fur}><cylinderGeometry args={[0.025, 0.035, 0.3, 5]} /></mesh>
+      </group>
+    </group>
+  );
+}
+
+/** A goat: boxy, bearded, small horns, a stubby tail. */
+function GoatBody({ coat, legRef, tailRef }: BodyProps) {
+  const fur = useMemo(() => new THREE.MeshStandardMaterial({ color: coat, roughness: 0.95 }), [coat]);
+  return (
+    <group>
+      <mesh position={[0, 0.62, 0]} material={fur} castShadow><boxGeometry args={[0.38, 0.38, 0.82]} /></mesh>
+      {[[-0.13, 0.3], [0.13, 0.3], [-0.13, -0.3], [0.13, -0.3]].map(([x, z], k) => (
+        <group key={k} ref={(el) => legRef(k, el)} position={[x, 0.46, z]}>
+          <mesh position-y={-0.23} material={fur} castShadow><boxGeometry args={[0.08, 0.46, 0.08]} /></mesh>
+        </group>
+      ))}
+      <group position={[0, 0.86, 0.46]} rotation-x={0.35}>
+        <mesh position={[0, 0, 0.08]} material={fur} castShadow><boxGeometry args={[0.2, 0.24, 0.3]} /></mesh>
+        <mesh position={[0, -0.17, 0.16]}><boxGeometry args={[0.05, 0.12, 0.05]} /><meshStandardMaterial color="#d8d0c2" /></mesh>
+        {[-1, 1].map((sd) => <mesh key={sd} position={[sd * 0.06, 0.16, -0.02]} rotation-x={-0.5} rotation-z={sd * -0.2}><coneGeometry args={[0.025, 0.16, 5]} /><meshStandardMaterial color="#8d7b62" /></mesh>)}
+        {[-1, 1].map((sd) => <mesh key={sd} position={[sd * 0.13, 0.04, 0.02]} rotation-z={sd * 1.1} material={fur}><boxGeometry args={[0.12, 0.04, 0.07]} /></mesh>)}
+      </group>
+      <group ref={tailRef} position={[0, 0.76, -0.42]}>
+        <mesh position={[0, 0.04, -0.02]} rotation-x={-0.9} material={fur}><boxGeometry args={[0.06, 0.12, 0.04]} /></mesh>
+      </group>
     </group>
   );
 }
@@ -189,6 +315,7 @@ export function Life() {
   return (
     <>
       <Cows />
+      <Critters />
       <Kites />
     </>
   );

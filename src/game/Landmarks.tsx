@@ -7,7 +7,7 @@ import { FIRST } from "./guest";
 import { ui } from "./store";
 import { DECKS, EXHIBITS, ME, STOPS } from "../content";
 import { BOOTH, COLUMNS_Z, deckX, HALL } from "./hall";
-import { ACROSS, PLACEMENTS, ROAD_HALF, STOP_POS, STOP_U, rng, roadHeading } from "./track";
+import { BESIDE, PLACEMENTS, ROAD_HALF, STOP_POS, STOP_U, rng, roadHeading } from "./track";
 import { FONT_MONO, FONT_SERIF } from "./Roadside";
 
 const MARBLE = "#e8dcc6";
@@ -90,7 +90,7 @@ function Books() {
 
 /* The JEE years, around the book tower: his notes wall, his organic-chemistry chart, the lectures, and him in class.
    Photos are public/photos/jee-1..4.jpg (the same ones the chapter's gallery shows). Each one opens full screen. */
-const JEE_STOP = STOPS.findIndex((s) => s.across === "books");
+const JEE_STOP = STOPS.findIndex((s) => s.beside === "books");
 const openPhoto = (stop: number, index: number) => (e: { stopPropagation: () => void }) => { e.stopPropagation(); if (stop >= 0) ui.set({ lightbox: { stop, index } }); };
 const zoomCursor = (on: boolean) => { document.body.style.cursor = on ? "zoom-in" : ""; };
 
@@ -261,6 +261,53 @@ function Stall() {
         </group>
       ))}
       <InstaPhone />
+      <group position={[-6.2, 0, 1]} rotation-y={0.3}><InfoBoard stop="chillhai" color="#e4007c" /></group>
+    </group>
+  );
+}
+
+/** A standing board beside a landmark: what I actually did there, readable as you walk past. */
+function boardTexture(title: string, stats: { n: string; l: string }[], points: string[], color: string) {
+  const c = document.createElement("canvas"); c.width = 1024; c.height = 1280;
+  const g = c.getContext("2d")!;
+  g.fillStyle = "#fbf6ec"; g.fillRect(0, 0, 1024, 1280);
+  g.fillStyle = color; g.fillRect(0, 0, 1024, 150);
+  g.fillStyle = "#ffffff"; g.font = "bold 30px monospace"; g.textAlign = "left";
+  g.fillText("WHAT I ACTUALLY DID", 60, 62);
+  g.font = "56px Georgia, serif"; g.fillText(title, 60, 124, 900);
+  // the numbers, big
+  stats.slice(0, 3).forEach((s, k) => {
+    const x = 60 + k * 310;
+    g.fillStyle = color; g.font = "bold 66px Georgia, serif"; g.fillText(s.n, x, 270, 290);
+    g.fillStyle = "#6d6457"; g.font = "26px sans-serif"; g.fillText(s.l, x, 310, 290);
+  });
+  g.strokeStyle = "#e0d4bd"; g.lineWidth = 3; g.beginPath(); g.moveTo(60, 360); g.lineTo(964, 360); g.stroke();
+  // the points, wrapped
+  let y = 440;
+  points.forEach((p, k) => {
+    g.fillStyle = color; g.font = "bold 40px Georgia, serif"; g.fillText(String(k + 1).padStart(2, "0"), 60, y);
+    g.fillStyle = "#2e2014"; g.font = "36px sans-serif";
+    const words = p.split(" "); let line = "", ly = y;
+    words.forEach((w) => {
+      if (g.measureText(line + w).width > 800) { g.fillText(line.trim(), 150, ly); line = ""; ly += 50; }
+      line += w + " ";
+    });
+    g.fillText(line.trim(), 150, ly);
+    y = ly + 96;
+  });
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return t;
+}
+
+function InfoBoard({ stop, color }: { stop: string; color: string }) {
+  const st = STOPS.find((s) => s.id === stop)!;
+  const map = useMemo(() => boardTexture(st.title, st.stats ?? [], st.points ?? [], color), [st, color]);
+  const W = 4.2, H = W * 1.25;
+  return (
+    <group>
+      {[-W / 2 + 0.15, W / 2 - 0.15].map((x) => <mesh key={x} position={[x, (H + 1.2) / 2, -0.08]} castShadow><boxGeometry args={[0.16, H + 1.2, 0.16]} /><meshStandardMaterial color="#4e342e" roughness={0.85} /></mesh>)}
+      <mesh position={[0, 1.2 + H / 2, -0.03]} castShadow><boxGeometry args={[W + 0.2, H + 0.2, 0.08]} /><meshStandardMaterial color="#4e342e" roughness={0.85} /></mesh>
+      <mesh position={[0, 1.2 + H / 2, 0.02]}><planeGeometry args={[W, H]} /><meshStandardMaterial map={map} emissiveMap={map} emissive="#ffffff" emissiveIntensity={0.3} roughness={0.7} /></mesh>
     </group>
   );
 }
@@ -461,6 +508,7 @@ function Office() {
       <Text font={FONT_SERIF} position={[0, 0.9, 4.53]} fontSize={0.55} color="#1e3a5f">1,200+ OFFERS · 75+ COMPANIES</Text>
       <SpoDay />
       <IdCard />
+      <group position={[-9.6, 0, 8.4]} rotation-y={0.35}><InfoBoard stop="spo" color="#1e88e5" /></group>
       <group position={[-8.5, 0, 5]}>
         <mesh position-y={6}><cylinderGeometry args={[0.1, 0.12, 12, 8]} /><meshStandardMaterial color="#ccc" /></mesh>
         <mesh ref={flag} position={[1, 11, 0]}><boxGeometry args={[2, 1.2, 0.05]} /><meshStandardMaterial color="#ff9933" /></mesh>
@@ -725,7 +773,73 @@ function marbleTexture() {
   return t;
 }
 
-const BANNERS: [string, string][] = [["BlinkX", "#5b2bd6"], ["Groww", "#00b386"], ["Swiggy", "#fc8019"], ["Spotify", "#1db954"], ["Meesho DICE", "#9f2089"], ["Sarvam AI", "#3d5afe"], ["The Ken × Zerodha", "#1d3557"], ["SARCathon", "#c1121f"]];
+const exhibitUrl = (id: string) => EXHIBITS.find((e) => e.id === id)?.links[0]?.url ?? "";
+/** The competitions, hung between the columns: each banner carries the company's logo and opens that work. */
+const BANNERS: { name: string; color: string; logos: string[]; url: string; sub: string }[] = [
+  { name: "BlinkX", color: "#5b2bd6", logos: [], url: "/decks/blinkx.pdf", sub: "Open the deck" },
+  { name: "Groww", color: "#00b386", logos: ["groww"], url: "/decks/groww.pdf", sub: "Open the deck" },
+  { name: "Swiggy", color: "#fc8019", logos: ["swiggy"], url: "/decks/swiggy.pdf", sub: "Open the deck" },
+  { name: "Spotify", color: "#1db954", logos: ["spotify"], url: "/decks/spotify.pdf", sub: "Open the deck" },
+  { name: "Meesho DICE", color: "#9f2089", logos: ["meesho"], url: "/decks/meesho.pdf", sub: "Semifinalist · the deck" },
+  { name: "Sarvam AI", color: "#3d5afe", logos: ["sarvam"], url: exhibitUrl("sarvam"), sub: "2nd place · try it" },
+  { name: "The Ken × Zerodha", color: "#1d3557", logos: ["ken", "zerodha"], url: exhibitUrl("pacto"), sub: "Top 7 of 3,000+ · Pacto" },
+  { name: "The Body Shop", color: "#004236", logos: ["bodyshop"], url: "/decks/bodyshop.pdf", sub: "Open the deck" },
+];
+
+function bannerTexture(b: (typeof BANNERS)[number]) {
+  const c = document.createElement("canvas"); c.width = 512; c.height = 1024;
+  const g = c.getContext("2d")!;
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  const imgs: HTMLImageElement[] = [];
+  const draw = () => {
+    g.fillStyle = b.color; g.fillRect(0, 0, 512, 1024);
+    g.strokeStyle = "rgba(233, 196, 106, 0.9)"; g.lineWidth = 10; g.strokeRect(22, 22, 468, 980);
+    // the logo, on a white card
+    g.fillStyle = "#ffffff"; g.beginPath(); g.roundRect(64, 110, 384, 384, 36); g.fill();
+    const ready = imgs.filter((im) => im.complete && im.naturalWidth);
+    if (ready.length) {
+      const slot = 300 / ready.length;
+      ready.forEach((im, k) => {
+        const s = Math.min(300 / im.naturalWidth, (slot - 14) / im.naturalHeight);
+        const w = im.naturalWidth * s, h = im.naturalHeight * s;
+        g.drawImage(im, 256 - w / 2, 152 + k * slot + (slot - h) / 2, w, h);
+      });
+    } else {
+      g.fillStyle = b.color; g.font = "bold 92px Georgia, serif"; g.textAlign = "center"; g.textBaseline = "middle";
+      g.fillText(b.name, 256, 302, 340);
+    }
+    g.fillStyle = "#ffffff"; g.textAlign = "center"; g.textBaseline = "alphabetic";
+    g.font = "64px Georgia, serif";
+    const words = b.name.split(" "), lines: string[] = [];
+    words.forEach((w) => { const l = lines.length - 1; if (l >= 0 && g.measureText(lines[l] + " " + w).width < 400) lines[l] += " " + w; else lines.push(w); });
+    lines.forEach((l, k) => g.fillText(l, 256, 620 + k * 74));
+    g.fillStyle = "rgba(255, 255, 255, 0.82)"; g.font = "bold 30px monospace";
+    g.fillText(b.sub.toUpperCase(), 256, 900, 440);
+    g.fillStyle = "#e9c46a"; g.fillText("TAP TO OPEN ↗", 256, 950);
+    tex.needsUpdate = true;
+  };
+  b.logos.forEach((l) => { const im = new Image(); im.onload = draw; im.src = `/logos/${l}.png`; imgs.push(im); });
+  draw();
+  return tex;
+}
+
+function Banner({ b }: { b: (typeof BANNERS)[number] }) {
+  const map = useMemo(() => bannerTexture(b), [b]);
+  const hover = useRef(false);
+  const mesh = useRef<THREE.Mesh>(null);
+  useFrame(({ clock }) => {
+    // a slow sway, and a lift toward you when the pointer is on it
+    const m = mesh.current; if (!m) return;
+    m.rotation.x = Math.sin(clock.elapsedTime * 0.9 + b.name.length) * 0.03;
+    m.position.z = THREE.MathUtils.lerp(m.position.z, hover.current ? 0.18 : 0, 0.15);
+  });
+  return (
+    <mesh ref={mesh} onClick={openUrl(b.url)} onPointerOver={() => { hover.current = true; pointer(true); }} onPointerOut={() => { hover.current = false; pointer(false); }}>
+      <planeGeometry args={[2.2, 4.4]} />
+      <meshStandardMaterial map={map} emissiveMap={map} emissive="#ffffff" emissiveIntensity={0.28} side={THREE.DoubleSide} roughness={0.8} />
+    </mesh>
+  );
+}
 
 function Hall() {
   const floorMap = useMemo(() => { const t = marbleTexture(); t.repeat.set(9, 8); return t; }, []);
@@ -754,12 +868,11 @@ function Hall() {
           <mesh position={[sx * W, 0.7, (Z - D) / 2]} material={white}><boxGeometry args={[0.35, 1.1, Z + D - 0.6]} /></mesh>
           {/* banners: the competitions, hanging between the columns */}
           {[-7.5, -2.5, 2.5, 7.5].map((z, k) => {
-            const [name, color] = BANNERS[(sx < 0 ? 0 : 4) + k];
+            const b = BANNERS[(sx < 0 ? 0 : 4) + k];
             return (
               <group key={z} position={[sx * (W - 0.2), 6.7, z]} rotation-y={-sx * Math.PI / 2}>
-                <mesh><planeGeometry args={[2.2, 4.4]} /><meshStandardMaterial color={color} side={THREE.DoubleSide} roughness={0.8} /></mesh>
+                <Banner b={b} />
                 <mesh position-y={2.25} material={gold}><boxGeometry args={[2.4, 0.08, 0.08]} /></mesh>
-                <Text font={FONT_SERIF} position={[0, 0, 0.02]} fontSize={0.36} color="#ffffff" maxWidth={2} textAlign="center" rotation-z={Math.PI / 2}>{name}</Text>
               </group>
             );
           })}
@@ -775,14 +888,14 @@ function Hall() {
       ))}
       <mesh position={[0, 12.2, Z]} material={navy} castShadow><boxGeometry args={[HALL.doorHalf * 2 + 4.6, 2.2, 0.8]} /></mesh>
       <Text font={FONT_SERIF} position={[0, 12.45, Z + 0.42]} fontSize={0.78} color="#e9c46a" letterSpacing={0.05}>COMPETITIONS & HACKATHONS</Text>
-      <Text font={FONT_MONO} position={[0, 11.6, Z + 0.42]} fontSize={0.26} color="#f6f2ea" letterSpacing={0.18}>CASE DECKS · NATIONAL FINAL · PODIUM</Text>
+      <Text font={FONT_MONO} position={[0, 11.6, Z + 0.42]} fontSize={0.26} color="#f6f2ea" letterSpacing={0.18}>CASE DECKS · TOP 7 OF 3,000+ · PODIUM</Text>
       <mesh position={[0, 14.1, Z]} material={gold} rotation-z={Math.PI / 4}><octahedronGeometry args={[0.9, 0]} /></mesh>
 
-      {/* the deck wall across the back, the booths, and the voice tower in the middle */}
+      {/* the deck wall across the back; Meesho in the middle, Pacto to the left, Sarvam to the right */}
       <group position={[0, 0.24, HALL.wallZ]}><DeckWall /></group>
-      <group position={[BOOTH.meesho.x, 0.24, BOOTH.meesho.z]} rotation-y={0.45}><MeeshoBooth /></group>
+      <group position={[BOOTH.meesho.x, 0.24, BOOTH.meesho.z]}><MeeshoBooth /></group>
       <group position={[BOOTH.sarvam.x, 0.24, BOOTH.sarvam.z]} rotation-y={-0.45} scale={0.85}><Podium /></group>
-      <group position={[BOOTH.pacto.x, 0.24, BOOTH.pacto.z]}><PactoBooth /></group>
+      <group position={[BOOTH.pacto.x, 0.24, BOOTH.pacto.z]} rotation-y={0.45}><PactoBooth /></group>
       {/* soft spotlights on each booth */}
       {[BOOTH.meesho, BOOTH.sarvam, BOOTH.pacto].map((b, k) => (
         <mesh key={k} position={[b.x, 5.2, b.z + 0.5]}>
@@ -863,13 +976,13 @@ function MeeshoBooth() {
   );
 }
 
-/** Pacto: a voice tower broadcasting rings, and the national-finalist plaque. */
+/** Pacto: a voice tower broadcasting rings, and the top-7 plaque. */
 function PactoBooth() {
   return (
     <group>
       <group scale={0.4}><Tower /></group>
       <mesh position={[0, 0.5, 2.2]}><boxGeometry args={[4.2, 0.9, 0.18]} /><meshStandardMaterial color="#00c853" /></mesh>
-      <Text font={FONT_SERIF} position={[0, 0.62, 2.3]} fontSize={0.24} color="#062e16">PACTO · NATIONAL FINALIST</Text>
+      <Text font={FONT_SERIF} position={[0, 0.62, 2.3]} fontSize={0.24} color="#062e16">PACTO · TOP 7 OF 3,000+</Text>
       <Text font={FONT_MONO} position={[0, 0.3, 2.3]} fontSize={0.13} color="#062e16">THE KEN × ZERODHA 2026</Text>
     </group>
   );
@@ -980,10 +1093,22 @@ function Society() {
           )))}
         </group>
       ))}
-      <mesh position={[0, 2, 4.2]}><boxGeometry args={[8.5, 2, 0.2]} /><meshStandardMaterial color="#fd3752" /></mesh>
-      <Text font={FONT_SERIF} position={[0, 2.25, 4.32]} fontSize={0.8} color="#fff">NoBroker</Text>
-      <Text font={FONT_SERIF} position={[0, 1.45, 4.32]} fontSize={0.42} color="#ffe0e4">HomeServices · Gurgaon launch</Text>
+      <NoBrokerSign />
       <FounderPost />
+    </group>
+  );
+}
+
+/** The society's sign: NoBroker's own logo on white, and what I worked on, in their red. */
+function NoBrokerSign() {
+  const logo = useMemo(() => loadTex("/logos/nobroker.png"), []);
+  return (
+    <group position={[0, 0, 4.2]}>
+      {[-3.9, 3.9].map((x) => <mesh key={x} position={[x, 1.3, -0.1]} castShadow><boxGeometry args={[0.18, 2.6, 0.18]} /><meshStandardMaterial color="#9e9e9e" metalness={0.5} roughness={0.4} /></mesh>)}
+      <mesh position={[0, 2.35, 0]} castShadow><boxGeometry args={[8.5, 2.3, 0.2]} /><meshStandardMaterial color="#ffffff" roughness={0.5} /></mesh>
+      <mesh position={[0, 2.62, 0.11]}><planeGeometry args={[5.6, 1.47]} /><meshStandardMaterial map={logo} transparent emissiveMap={logo} emissive="#ffffff" emissiveIntensity={0.25} /></mesh>
+      <mesh position={[0, 1.45, 0.11]}><planeGeometry args={[8.5, 0.5]} /><meshStandardMaterial color="#fd3752" /></mesh>
+      <Text font={FONT_MONO} position={[0, 1.45, 0.13]} fontSize={0.24} color="#ffffff" letterSpacing={0.08} anchorX="center" anchorY="middle">PRODUCT INTERN · HOMESERVICES GURGAON LAUNCH · PPO</Text>
     </group>
   );
 }
@@ -1124,12 +1249,10 @@ function marquee() {
   const g = c.getContext("2d")!;
   const grd = g.createLinearGradient(0, 0, 0, 512); grd.addColorStop(0, "#1b1030"); grd.addColorStop(1, "#08060f");
   g.fillStyle = grd; g.fillRect(0, 0, 1024, 512);
-  g.fillStyle = "#ffd54f"; g.font = "bold 46px Georgia, serif"; g.textAlign = "center";
-  g.fillText("★  NOW SHOWING  ★", 512, 80);
-  g.fillStyle = "#fff8e6"; g.font = "italic 54px Georgia, serif";
-  ["Fight Club", "Memories of Murder", "Predestination", "The Wailing"].forEach((f, i) => g.fillText(f, 512, 170 + i * 72));
-  g.fillStyle = "#ff8a65"; g.font = "28px Georgia, serif";
-  g.fillText("Mukund's Letterboxd top 4 · 56 films and counting", 512, 470);
+  g.fillStyle = "#ffd54f"; g.font = "bold 40px Georgia, serif"; g.textAlign = "center";
+  g.fillText("★  NOW SHOWING  ★", 512, 56);
+  g.fillStyle = "#ff8a65"; g.font = "26px Georgia, serif";
+  g.fillText("Mukund's Letterboxd top four · and one he just loved", 512, 488);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
@@ -1150,7 +1273,33 @@ function Cinema() {
       <mesh position={[0, 8, -0.2]} castShadow><boxGeometry args={[22, 12, 0.4]} /><meshStandardMaterial color="#2a1a14" /></mesh>
       <mesh position={[0, 8, 0.02]}><planeGeometry args={[20.4, 10.4]} /><meshStandardMaterial ref={screen} map={map} emissiveMap={map} emissive="#ffffff" emissiveIntensity={1} toneMapped={false} /></mesh>
       {bulbs.map(([x, y], i) => <mesh key={i} position={[x, y, 0.1]}><sphereGeometry args={[0.13, 8, 8]} /><meshBasicMaterial color="#ffe082" toneMapped={false} /></mesh>)}
+      <Posters />
       {[-6, -2, 2, 6].map((x) => <mesh key={x} position={[x, 0.5, 9]}><boxGeometry args={[2.6, 1, 1.2]} /><meshStandardMaterial color="#b71c1c" /></mesh>)}
+    </group>
+  );
+}
+
+/** The five films, as posters on the screen. Each opens its Letterboxd page. */
+const FILMS = [
+  { file: "fightclub", slug: "fight-club", tag: "Top 4" }, { file: "memories", slug: "memories-of-murder", tag: "Top 4" },
+  { file: "predestination", slug: "predestination", tag: "Top 4" }, { file: "wailing", slug: "the-wailing", tag: "Top 4" },
+  { file: "goodwill", slug: "good-will-hunting", tag: "Recently loved" },
+];
+function Posters() {
+  const maps = useMemo(() => FILMS.map((f) => loadTex(`/posters/${f.file}.jpg`)), []);
+  const W = 3.1, H = W * 1.5;
+  return (
+    <group position={[0, 7.85, 0.1]}>
+      {FILMS.map((f, k) => {
+        const x = (k - 2) * (W + 0.75);
+        return (
+          <group key={f.file} position-x={x} onClick={openUrl(`https://letterboxd.com/film/${f.slug}/`)} onPointerOver={() => pointer(true)} onPointerOut={() => pointer(false)}>
+            <mesh position-z={-0.02}><boxGeometry args={[W + 0.2, H + 0.2, 0.06]} /><meshStandardMaterial color={k === 4 ? "#ff8a65" : "#d4a83a"} metalness={0.6} roughness={0.35} /></mesh>
+            <mesh position-z={0.02}><planeGeometry args={[W, H]} /><meshStandardMaterial map={maps[k]} emissiveMap={maps[k]} emissive="#ffffff" emissiveIntensity={0.75} toneMapped={false} /></mesh>
+            <Text font={FONT_MONO} position={[0, -H / 2 - 0.36, 0.04]} fontSize={0.2} color={k === 4 ? "#ff8a65" : "#ffd54f"} anchorX="center" anchorY="middle">{f.tag.toUpperCase()}</Text>
+          </group>
+        );
+      })}
     </group>
   );
 }
@@ -1212,9 +1361,9 @@ export function Landmarks() {
         if (s.landmark === "gate") return <group key={s.id}><OnRoad i={i}><Gate /></OnRoad><Placed i={i}><KelkarLibrary /></Placed></group>;
         // the comeback: the speed breaker on the road, and the climb beside it
         if (s.id === "comeback") return <group key={s.id}><OnRoad i={i}><Breaker /></OnRoad><Placed i={i}><Climb /></Placed></group>;
-        const C = BY_TYPE[s.landmark], A = ACROSS[i];
+        const C = BY_TYPE[s.landmark], A = BESIDE[i];
         if (A) {
-          // Agra: the Taj on one side, the JEE book tower and his study corner across the road
+          // Agra: the Taj, and up the road from it the JEE book tower and his study corner
           const B = BY_TYPE[A.kind as keyof typeof BY_TYPE];
           return <group key={s.id}><Placed i={i}><C /></Placed><group position={A.pos} rotation-y={A.rotY}><B /></group></group>;
         }

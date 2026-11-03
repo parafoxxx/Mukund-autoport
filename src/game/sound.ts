@@ -211,16 +211,6 @@ export function coin() {
   tone(f, t, 0.08, "square", 0.05); tone(f * 1.5, t + 0.06, 0.16, "sine", 0.07);
 }
 
-/** Moo. */
-export function moo() {
-  const a = audio(); if (!master) return;
-  const t = a.currentTime, o = a.createOscillator(), f = a.createBiquadFilter(), g = a.createGain();
-  o.type = "sawtooth"; o.frequency.setValueAtTime(128, t); o.frequency.linearRampToValueAtTime(150, t + 0.25); o.frequency.linearRampToValueAtTime(104, t + 1.1);
-  f.type = "bandpass"; f.Q.value = 3; f.frequency.setValueAtTime(380, t); f.frequency.linearRampToValueAtTime(820, t + 0.35); f.frequency.linearRampToValueAtTime(420, t + 1.1);
-  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.5, t + 0.12); g.gain.setValueAtTime(0.45, t + 0.8); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
-  o.connect(f).connect(g).connect(master); o.start(t); o.stop(t + 1.25);
-}
-
 /** Off the ramp. */
 export function whoosh() {
   const a = audio(); if (!master) return;

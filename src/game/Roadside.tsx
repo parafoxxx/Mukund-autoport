@@ -20,6 +20,13 @@ export function Milestones() {
   );
 }
 
+const STONE_W = 1.2;
+/** The chapter name, sized so its longest word fits the stone and it wraps to at most three lines. */
+function nameSize(name: string) {
+  const longest = Math.max(...name.split(/\s+/).map((w) => w.length));
+  return Math.min(0.22, (STONE_W - 0.2) / (longest * 0.56), name.length > 18 ? 0.16 : 1);
+}
+
 function Milestone({ i, visited, next }: { i: number; visited: boolean; next: boolean }) {
   const stop = STOPS[i];
   const h = roadHeading(STOP_U[i]);
@@ -51,17 +58,17 @@ function Milestone({ i, visited, next }: { i: number; visited: boolean; next: bo
       </mesh>
       {/* the milestone itself: white stone, painted dome, chapter number */}
       <group position={pos} rotation-y={h + Math.PI / 2} scale={1.6}>
-        <mesh position-y={0.62} castShadow><boxGeometry args={[0.9, 1.24, 0.34]} /><meshStandardMaterial color="#f3efe6" roughness={0.9} /></mesh>
-        <mesh position-y={1.24} rotation-x={Math.PI / 2} castShadow>
-          <cylinderGeometry args={[0.45, 0.45, 0.34, 24]} />
+        <mesh position-y={0.7} castShadow><boxGeometry args={[STONE_W, 1.4, 0.34]} /><meshStandardMaterial color="#f3efe6" roughness={0.9} /></mesh>
+        <mesh position-y={1.4} rotation-x={Math.PI / 2} castShadow>
+          <cylinderGeometry args={[STONE_W / 2, STONE_W / 2, 0.34, 32]} />
           <meshStandardMaterial color={visited ? "#d9d2c3" : stop.color} roughness={0.8} />
         </mesh>
-        <mesh position-y={0.04}><boxGeometry args={[1.05, 0.08, 0.46]} /><meshStandardMaterial color="#8c8274" /></mesh>
+        <mesh position-y={0.04}><boxGeometry args={[STONE_W + 0.15, 0.08, 0.46]} /><meshStandardMaterial color="#8c8274" /></mesh>
         {[1, -1].map((side) => (
           <group key={side} rotation-y={side > 0 ? 0 : Math.PI} position-z={0.175 * side}>
-            <Text font={FONT_MONO} position={[0, 1.36, 0.002]} fontSize={0.14} color="#1a1208">{`CH ${String(i + 1).padStart(2, "0")}`}</Text>
-            <Text font={FONT_SERIF} position={[0, 0.86, 0.002]} fontSize={0.2} color="#1a1208" maxWidth={0.8} textAlign="center" lineHeight={1}>{stop.name}</Text>
-            <Text font={FONT_MONO} position={[0, 0.38, 0.002]} fontSize={0.1} color="#6d6457">{visited ? "VISITED" : `${String(i + 1).padStart(2, "0")} / ${STOPS.length}`}</Text>
+            <Text font={FONT_MONO} position={[0, 1.62, 0.002]} fontSize={0.15} color="#1a1208" anchorX="center" anchorY="middle">{`CH ${String(i + 1).padStart(2, "0")}`}</Text>
+            <Text font={FONT_SERIF} position={[0, 0.98, 0.002]} fontSize={nameSize(stop.name)} color="#1a1208" maxWidth={STONE_W - 0.16} textAlign="center" anchorX="center" anchorY="middle" lineHeight={1.05}>{stop.name}</Text>
+            <Text font={FONT_MONO} position={[0, 0.36, 0.002]} fontSize={0.09} color="#6d6457" anchorX="center" anchorY="middle">{visited ? "VISITED" : `${String(i + 1).padStart(2, "0")} / ${STOPS.length}`}</Text>
           </group>
         ))}
       </group>

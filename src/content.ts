@@ -84,9 +84,10 @@ export type Stop = {
   title: string;
   lines: string[];
   stats?: { n: string; l: string }[];
+  points?: string[];     // what I actually did, as a short list on the chapter card
   photo?: string;        // /photos/<file>
   gallery?: string;      // chapter photos are public/photos/<gallery>-1..8 (default: the id)
-  across?: Landmark;     // a second landmark, across the road from the first
+  beside?: Landmark;     // a second landmark, up the road from the first
   link?: { label: string; url: string; embed?: boolean }; // a button on the chapter card (embed: opens inside the ride)
   walkIn?: boolean;      // a place you can walk into and explore (the chapter card offers it)
   keywords: string[];    // what you can say to the driver to go here
@@ -97,12 +98,12 @@ export type Stop = {
 
 export const STOPS: Stop[] = [
   {
-    id: "agra", name: "Agra", landmark: "taj", across: "books", color: "#ffcc00", sticker: "🕌",
+    id: "agra", name: "Agra", landmark: "taj", beside: "books", color: "#ffcc00", sticker: "🕌",
     title: "Agra. Then the JEE grind.",
-    lines: ["Grew up in the city of the Taj. Till class 10, a very mid student.", "Then I decided mid wasn't the plan. Two years of JEE: books, mocks, repeat."],
+    lines: ["Grew up a few kilometres from the Taj. Till class 10: not bad, not great, very mid.", "Then I made my first real call: mid wasn't the plan. Two years of JEE. Books, mocks, repeat. The tower of books up the road is what those years looked like."],
     photo: "/photos/agra.jpg", gallery: "jee",
     keywords: ["agra", "taj", "home", "ghar", "start", "shuru", "jee", "coaching", "padhai", "study", "books", "kota"],
-    act: "pose", quip: "Agra se hoon. Taj Mahal mera padosi hai.",
+    act: "pose", quip: "Taj Mahal padosi tha, JEE ki kitaabein roommate.",
   },
   {
     id: "iitk", name: "IIT Kanpur", landmark: "gate", color: "#e53935", sticker: "🎓",
@@ -122,7 +123,12 @@ export const STOPS: Stop[] = [
   {
     id: "chillhai", name: "Chill Hai", landmark: "stall", color: "#e4007c", sticker: "🛍️",
     title: "Built a brand. Named it Chill Hai.",
-    lines: ["A campus D2C brand from zero: product design, vendors, pricing, fulfilment and Instagram.", "The call: ₹0 on ads. Every sale came from Instagram and word of mouth.", "(Irony noted: nothing about it was chill.)"],
+    lines: ["A campus D2C brand I started from zero in my second year, and ran for a year. (Irony noted: nothing about it was chill.)"],
+    points: [
+      "Designed every product myself, then found and negotiated with the vendors who made them.",
+      "Set the prices for a student wallet, and ran fulfilment across campus.",
+      "The call: ₹0 on ads. Grew it only on Instagram and word of mouth, so every sale was a real one.",
+    ],
     stats: [{ n: "₹3.75L+", l: "revenue in a year" }, { n: "₹1L+", l: "in month one" }, { n: "₹0", l: "spent on ads" }],
     photo: "/photos/chillhai.jpg", keywords: ["chill hai", "chill", "brand", "business", "startup", "d2c", "store"],
     link: { label: "@chill_hai.official", url: "https://www.instagram.com/chill_hai.official/" },
@@ -131,7 +137,12 @@ export const STOPS: Stop[] = [
   {
     id: "spo", name: "Placement Office", landmark: "office", color: "#1e88e5", sticker: "🤝",
     title: "Ran placements for my batch.",
-    lines: ["Assistant Placement Coordinator at IIT Kanpur.", "A 4-tier team, 75+ companies, and a lot of phone calls."],
+    lines: ["Assistant Placement Coordinator at IIT Kanpur, April 2025 to May 2026: the whole drive for my batch."],
+    points: [
+      "Led a 4-tier team of 150+ students: coordinators, volunteers and the people on the phones.",
+      "Was the contact for 75+ companies through the drive, from first outreach to interview day.",
+      "Kept the drive running on schedule until the offers came: 1,200+ placements and 500+ internships.",
+    ],
     stats: [{ n: "150+", l: "people on my team" }, { n: "1,200+", l: "placement offers" }, { n: "500+", l: "internship offers" }],
     photo: "/photos/spo.jpg", keywords: ["placement", "spo", "office", "team", "coordinator"],
     act: "run", quip: "1,200 offers. Phone kabhi silent pe nahi gaya, main kabhi ruka nahi.",
@@ -139,9 +150,9 @@ export const STOPS: Stop[] = [
   {
     id: "arena", name: "Competitions & Hackathons", landmark: "hall", color: "#ffb300", sticker: "🏆",
     title: "Competitions & hackathons.",
-    lines: ["Nine case competitions, a national final and a hackathon podium. Every time: a real problem, a deadline, a team, and something shipped. Walk in and look around."],
+    lines: ["Nine case competitions, a top-7 finish out of 3,000+ teams and a hackathon podium. Every time: a real problem, a deadline, a team, and something shipped. Walk in and look around."],
     stats: [
-      { n: "9", l: "case decks" }, { n: "National finalist", l: "Pacto · The Ken × Zerodha 2026" },
+      { n: "9", l: "case decks" }, { n: "Top 7", l: "of 3,000+ teams · Pacto" },
       { n: "2nd", l: "Sarvam AI hackathon" }, { n: "Semifinalist", l: "Meesho DICE Season 3" },
     ],
     walkIn: true,
@@ -160,7 +171,7 @@ export const STOPS: Stop[] = [
   {
     id: "cinema", name: "Drive-in", landmark: "cinema", color: "#ffd54f", sticker: "🎬",
     title: "Off duty: movies. Lots of movies.",
-    lines: ["Favourites: Fight Club, Memories of Murder, Predestination, The Wailing.", "Recently liked Good Will Hunting. Smart kid, a bit notorious, figuring it out. Relatable."],
+    lines: ["My Letterboxd top four: Fight Club, Memories of Murder, Predestination, The Wailing. They're on the screen.", "Recently liked Good Will Hunting. Smart kid, a bit notorious, figuring it out. Relatable."],
     photo: "/photos/movies.jpg", keywords: ["movie", "movies", "cinema", "film", "picture", "letterboxd"],
     act: "sit", quip: "Fight Club ka pehla rule? Is portfolio ke baare mein sabko batao.",
   },
@@ -217,9 +228,9 @@ export const EXHIBITS: Exhibit[] = [
     ],
   },
   {
-    id: "pacto", name: "Pacto", kicker: "National finalist · The Ken × Zerodha 2026",
+    id: "pacto", name: "Pacto", kicker: "Top 7 of 3,000+ teams · The Ken × Zerodha 2026",
     blurb: "I led Pacto: a Hinglish voice-and-chat AI agent that keeps you accountable. In an 8-person pilot, regular no-shows turned into near-daily attendance.",
-    facts: [{ n: "National finalist", l: "The Ken × Zerodha 2026" }, { n: "18", l: "test cycles on the prompts" }],
+    facts: [{ n: "Top 7", l: "of 3,000+ teams" }, { n: "18", l: "test cycles on the prompts" }],
     links: [{ label: "See Pacto", url: "https://drive.google.com/drive/folders/1-MmQmRzocwNhphs2Kv5fsQF9HZWl4sji?usp=sharing" }],
   },
 ];

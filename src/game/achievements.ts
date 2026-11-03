@@ -8,7 +8,7 @@ export const BADGES = [
   { id: "coins", title: "Chillar Collector", sub: "Picked up 40 coins off the road." },
   { id: "air", title: "Udta Auto", sub: "A full second of air time." },
   { id: "jumps", title: "Frequent Flyer", sub: "Five ramp jumps." },
-  { id: "cow", title: "Gau Mata Ki Jai", sub: "Honked at a grazing cow. She mooed back." },
+  { id: "cow", title: "Gau Mata Ki Jai", sub: "Honked at a grazing cow. She was not impressed." },
   { id: "speed", title: "Tez Raftaar", sub: "Hit 70 km/h in a three-wheeler." },
   { id: "cones", title: "Slalom Champ", sub: "Sent 15 cones flying." },
   { id: "tricks", title: "Showman", sub: "Five tricks on foot." },

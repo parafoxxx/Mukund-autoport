@@ -14,9 +14,9 @@ export const HALL = { halfW: 14, halfD: 12, doorZ: 12.5, doorHalf: 3.6, wallZ: -
 
 /** Where each part stands, in the hall's own coordinates. */
 export const BOOTH = {
-  meesho: new THREE.Vector3(-8.6, 0, -1.5),
+  meesho: new THREE.Vector3(0, 0, -3.2),
   sarvam: new THREE.Vector3(8.6, 0, -1.5),
-  pacto: new THREE.Vector3(0, 0, -3.2),
+  pacto: new THREE.Vector3(-8.6, 0, -1.5),
 };
 const DECK_SPACING = 2.95;
 export const deckX = (i: number) => (i - (DECKS.length - 1) / 2) * DECK_SPACING;
@@ -51,7 +51,7 @@ const SPOTS: Spot[] = placement ? [
   ...DECKS.map((_, i) => ({ kind: "deck" as const, index: i, at: toWorld(deckX(i), HALL.wallZ + 1.6), reach: 1.7 })),
   { kind: "booth", exhibit: "meesho", at: toWorld(BOOTH.meesho.x, BOOTH.meesho.z + 3.4), reach: 3.4 },
   { kind: "booth", exhibit: "sarvam", at: toWorld(BOOTH.sarvam.x, BOOTH.sarvam.z + 3.4), reach: 3.4 },
-  { kind: "booth", exhibit: "pacto", at: toWorld(BOOTH.pacto.x, BOOTH.pacto.z + 2.6), reach: 2.6 },
+  { kind: "booth", exhibit: "pacto", at: toWorld(BOOTH.pacto.x, BOOTH.pacto.z + 3), reach: 3 },
 ] : [];
 
 /* Browsing the deck wall. At a screen, left/right (A/D or the arrows) glide him to the next one instead of turning. */

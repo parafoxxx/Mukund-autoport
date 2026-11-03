@@ -139,7 +139,7 @@ export const STORIES: Record<string, Story> = {
       "Led the team that built Pacto, an AI agent you talk to by voice or chat, in Hinglish, that holds you to what you said you'd do.",
       "Ran an 8-person pilot: regular no-shows turned into near-daily attendance.",
       "Put the prompts through 18 rounds of testing with real users before the final.",
-      "Reached the national final of The Ken × Zerodha 2026.",
+      "Finished in the top 7 out of 3,000+ teams at The Ken × Zerodha 2026.",
     ],
     call: "Spend the time on 18 rounds of prompt testing with real users instead of adding features.",
     learned: "Accountability sticks when it sounds like a friend in Hinglish, not like a reminder app.",

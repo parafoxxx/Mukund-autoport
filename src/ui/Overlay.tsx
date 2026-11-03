@@ -661,6 +661,13 @@ function Chapter() {
                 <motion.p key={k} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1 + k * 0.75, duration: 0.6, ease: EASE }}>{l}</motion.p>
               ))}
             </div>
+            {stop.points && (
+              <ul className="ch-points">
+                {stop.points.map((pt, k) => (
+                  <motion.li key={k} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1 + stop.lines.length * 0.75 + k * 0.3, duration: 0.5, ease: EASE }}>{pt}</motion.li>
+                ))}
+              </ul>
+            )}
             {stop.stats && (
               <div className="ch-figs">
                 {stop.stats.map((s, k) => (
@@ -875,7 +882,7 @@ function ExhibitCard() {
         </motion.div>
       ) : inside ? (
         <motion.div key="hint" className="exhibit-hint glass" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-          <IconTrophy /> Walk up to anything: decks on the back wall, Meesho left, Sarvam right, Pacto centre. Done? Walk out to your auto and press F.
+          <IconTrophy /> Walk up to anything: decks on the back wall, Meesho in the middle, Pacto left, Sarvam right. The banners open each company's work. Done? Walk out to your auto and press F.
         </motion.div>
       ) : null}
     </AnimatePresence>
@@ -930,7 +937,7 @@ const CREDITS: [string, string][] = [
   ["And", "One black-and-yellow auto, UP 80"],
   ["Product Intern · PPO", "NoBroker"],
   ["Founder", "Chill Hai · ₹3.75L+ revenue, ₹0 on ads"],
-  ["Team Lead · National Finalist", "Pacto · The Ken × Zerodha 2026"],
+  ["Team Lead · Top 7 of 3,000+", "Pacto · The Ken × Zerodha 2026"],
   ["Assistant Placement Coordinator", "IIT Kanpur · 1,200+ offers"],
   ["Plot twist", "CPI 7.0 → 8.0, with two 9.5s"],
   ["Case competitions", "9 decks · BlinkX, Groww, Swiggy, The Body Shop, Meesho DICE and more"],

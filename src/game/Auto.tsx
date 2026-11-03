@@ -7,7 +7,7 @@ import { ME, STOPS, type Act } from "../content";
 import { FIRST } from "./guest";
 import { input, driving } from "./input";
 import { beat, bubbleAnchor, ESTABLISH, focus, sim, ui, walker } from "./store";
-import { BOUNDS, COLLIDERS, CURVE, PLACEMENTS, ROAD_HALF, SAMPLES, SAMPLE_COUNT, START, STOP_POS, STOP_U, guidePoint, nearestSample } from "./track";
+import { BESIDE, BOUNDS, COLLIDERS, CURVE, PLACEMENTS, ROAD_HALF, SAMPLES, SAMPLE_COUNT, START, STOP_POS, STOP_U, guidePoint, nearestSample } from "./track";
 import { FONT_MONO, FONT_SERIF } from "./Roadside";
 import { AVATAR_URL, characterSpot, heroSpot, useActs } from "./Character";
 import { scripted, SEAT } from "./Player";
@@ -482,6 +482,12 @@ const FRAMING: Record<Act, { dist: number; camY: number; lookY: number }> = {
 /** Direction from Mukund to the close-up camera: in front of him, nudged until nothing blocks the shot. */
 function planCloseUp(i: number) {
   const spot = characterSpot(i);
+  // with a second landmark (Agra), look at him with both behind him: aim mostly at the smaller one
+  const B = BESIDE[i];
+  if (B) {
+    const P = PLACEMENTS[i].pos, mx = P.x * 0.3 + B.pos.x * 0.7, mz = P.z * 0.3 + B.pos.z * 0.7; // the Taj is big enough to fill in from the side
+    spot.away.set(spot.pos.x - mx, 0, spot.pos.z - mz).normalize();
+  }
   for (const turn of [0, 0.35, -0.35, 0.7, -0.7, 1.1, -1.1]) {
     const d = spot.away.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), turn);
     const x = spot.pos.x + d.x * 5, z = spot.pos.z + d.z * 5;
@@ -543,7 +549,13 @@ function planShot(c: ReturnType<typeof focusOf>, from: number) {
 
 /** The point a chapter's camera orbits: between the auto's stop and its landmark. */
 function focusOf(i: number) {
-  const P = PLACEMENTS[i], S = STOP_POS[i];
+  const P = PLACEMENTS[i], S = STOP_POS[i], A = BESIDE[i];
+  if (A) {
+    // two landmarks: aim between them and pull back far enough to hold both
+    const cx = (P.pos.x + A.pos.x + S.x) / 3, cz = (P.pos.z + A.pos.z + S.z) / 3;
+    const span = Math.hypot(P.pos.x - A.pos.x, P.pos.z - A.pos.z);
+    return { x: cx, z: cz, r: span * 0.85 + 12, h: 10, lookY: 5 };
+  }
   const big = P.radius;
   const cx = big > 0 ? (P.pos.x * 0.65 + S.x * 0.35) : S.x, cz = big > 0 ? (P.pos.z * 0.65 + S.z * 0.35) : S.z;
   return { x: cx, z: cz, r: 14 + big * 1.6, h: 5 + big * 0.45, lookY: 2.5 + big * 0.25 };
