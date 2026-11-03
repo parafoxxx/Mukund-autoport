@@ -6,7 +6,7 @@ import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js
 import { ME, STOPS, type Act } from "../content";
 import { FIRST } from "./guest";
 import { input, driving } from "./input";
-import { beat, bubbleAnchor, ESTABLISH, focus, sim, ui, walker } from "./store";
+import { beat, bubbleAnchor, ESTABLISH, focus, openPoster, poster, sim, ui, walker } from "./store";
 import { BESIDE, BOUNDS, COLLIDERS, CURVE, PLACEMENTS, ROAD_HALF, SAMPLES, SAMPLE_COUNT, START, STOP_POS, STOP_U, guidePoint, nearestSample } from "./track";
 import { FONT_MONO, FONT_SERIF } from "./Roadside";
 import { AVATAR_URL, characterSpot, heroSpot, mirrorDir, useActs } from "./Character";
@@ -255,11 +255,25 @@ const POSTER_RIM = canvasShape(1.46, 0.88, 0.32, 0.04);
 
 function BackPoster() {
   const map = useMemo(posterTexture, []);
+  const rim = useRef<THREE.MeshStandardMaterial>(null);
+  const top = useRef<THREE.Object3D>(null);
   const hover = (on: boolean) => { document.body.style.cursor = on ? "pointer" : ""; };
+  const p = useMemo(() => new THREE.Vector3(), []);
+  useFrame(({ camera, size, clock }) => {
+    // until someone taps it, the gold edge breathes: this is a thing you can press, not paint
+    if (rim.current) rim.current.emissiveIntensity = poster.tapped ? 0 : 0.35 + 0.35 * (0.5 + 0.5 * Math.sin(clock.elapsedTime * 3.2));
+    // where its top edge sits on screen, for the "tap it" tag
+    if (top.current) {
+      top.current.getWorldPosition(p).project(camera);
+      poster.x = ((p.x + 1) / 2) * size.width; poster.y = ((1 - p.y) / 2) * size.height;
+      poster.visible = p.z < 1 && Math.abs(p.x) < 0.9 && p.y < 0.95 && p.y > -0.9;
+    }
+  });
   return (
     <group position={[0, 1.105, -1.47]} rotation-y={Math.PI}
-      onClick={(e) => { e.stopPropagation(); ui.set({ plan: 0, planNote: true }); }} onPointerOver={() => hover(true)} onPointerOut={() => hover(false)}>
-      <mesh geometry={POSTER_RIM} position={[0, -0.02, -0.004]}><meshStandardMaterial color="#e5bd63" metalness={0.5} roughness={0.4} /></mesh>
+      onClick={(e) => { e.stopPropagation(); openPoster(); }} onPointerOver={() => hover(true)} onPointerOut={() => hover(false)}>
+      <object3D ref={top} position={[0, 0.9, 0]} />
+      <mesh geometry={POSTER_RIM} position={[0, -0.02, -0.004]}><meshStandardMaterial ref={rim} color="#e5bd63" emissive="#ffb547" emissiveIntensity={0} metalness={0.5} roughness={0.4} /></mesh>
       <mesh geometry={POSTER}><meshStandardMaterial map={map} emissiveMap={map} emissive="#ffffff" emissiveIntensity={0.42} roughness={0.55} /></mesh>
     </group>
   );

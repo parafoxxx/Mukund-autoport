@@ -716,3 +716,14 @@ kbd {
 .guide-row { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
 .guide-row .mono { font-size: 9.5px; color: var(--paper-faint); }
 @media (max-width: 700px) { .guide { top: 84px; max-height: calc(100vh - 300px); } .guide ul { grid-template-columns: 1fr; } }
+
+/* ---------- "that's not decoration": the tag above the poster on the auto ---------- */
+.poster-prompt-anchor { position: fixed; left: 0; top: 0; z-index: 27; pointer-events: none; will-change: transform; }
+.poster-prompt { pointer-events: auto; position: relative; display: inline-flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 14px 6px; margin-bottom: 10px; border-radius: 14px;
+  border: 1px solid rgba(255, 181, 71, 0.6); background: rgba(20, 16, 12, 0.82); backdrop-filter: blur(8px); color: var(--paper); font: 400 13.5px var(--sans); white-space: nowrap; cursor: pointer; box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4); }
+.poster-prompt b { color: var(--saffron); font-weight: 600; }
+.poster-prompt:hover { border-color: var(--saffron); }
+.pp-arrow { display: inline-flex; color: var(--saffron); animation: ppbob 1.1s ease-in-out infinite; }
+.pp-arrow svg { width: 16px; height: 16px; }
+@keyframes ppbob { 50% { transform: translateY(4px); } }
+@media (prefers-reduced-motion: reduce) { .pp-arrow { animation: none; } }

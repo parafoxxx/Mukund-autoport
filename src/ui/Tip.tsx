@@ -39,8 +39,8 @@ type Props = {
 
 export function Tip({ id, when: moment, delay = 1500, place = "below", align = "right", title, children, action, anchor }: Props) {
   const cur = useSyncExternalStore(subscribe, () => open);
-  const busy = useUI((s) => s.guide || s.wallNote);
-  const when = moment && !busy; // never over the controls guide or one of his notes
+  const busy = useUI((s) => s.guide || s.wallNote || s.posterPrompt);
+  const when = moment && !busy; // never over the controls guide, one of his notes, or the poster's tag
   const [ready, setReady] = useState(false);
   useEffect(() => {
     if (!when || seen.has(id)) { setReady(false); return; }

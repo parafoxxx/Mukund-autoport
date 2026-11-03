@@ -6,7 +6,7 @@ import { STORIES, type Story } from "../stories";
 import { HALL_STOP, inHall, spotNear, stepDeck, type Spot } from "../game/hall";
 import { startVoiceDrive, toggleVoiceDrive, voiceDriveSupported } from "../game/voiceDrive";
 import { FIRST, GUEST } from "../game/guest";
-import { bubbleAnchor, cue, sim, ui, useUI, walker } from "../game/store";
+import { bubbleAnchor, cue, openPoster, poster, sim, ui, useUI, walker } from "../game/store";
 import { closeStop, readTime, startExpress } from "../game/Director";
 import { input } from "../game/input";
 import { audioRunning, babble, clack, setMuted, startEngine, voiceDuration, wakeAudio } from "../game/sound";
@@ -97,10 +97,60 @@ export function Overlay() {
       <Bubble />
       <AnimatePresence>{phase === "finale" && <Credits key="credits" />}</AnimatePresence>
       <AvatarPrompt />
+      {phase === "ride" && <PosterPrompt />}
       <ControlsGuide />
       <FourthWall />
       <Loader />
     </>
+  );
+}
+
+/* ---------- the poster on the auto's back is a button, not paint: a tag above it says so, until it's tapped ---------- */
+function PosterPrompt() {
+  const box = useRef<HTMLDivElement>(null);
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    // first after ~10 s of driving behind it, then once more later; 14 s each time
+    let shows = 0, on = false, since = 0;
+    const t = setInterval(() => {
+      const s = ui.get(), now = performance.now();
+      const calm = s.phase === "ride" && !s.onFoot && s.active === null && s.plan === null && !s.mapOpen && !s.wallNote && !s.guide && !s.embed && !s.lightbox;
+      const due = (shows === 0 && sim.posterSeen > 10) || (shows === 1 && sim.posterSeen > 90);
+      let next = on;
+      if (poster.tapped) next = false;
+      else if (!calm) { next = false; if (on && now - since < 4000) shows--; } // cut short by something else: try again when it's calm
+      else if (on && now - since > 14000) next = false;
+      else if (!on && due) { shows++; since = now; next = true; }
+      if (next !== on) { on = next; setShow(next); ui.set({ posterPrompt: next }); }
+    }, 250);
+    return () => clearInterval(t);
+  }, []);
+  useEffect(() => {
+    if (!show) return;
+    let raf = 0;
+    const tick = () => {
+      const el = box.current;
+      if (el) {
+        el.style.transform = `translate(${poster.x}px, ${poster.y}px) translate(-50%, -100%)`;
+        el.style.visibility = poster.visible ? "visible" : "hidden";
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [show]);
+  return (
+    <div ref={box} className="poster-prompt-anchor">
+      <AnimatePresence>
+        {show && (
+          <motion.button className="poster-prompt" onClick={openPoster}
+            initial={{ opacity: 0, y: 10, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 6, transition: { duration: 0.2 } }} transition={{ type: "spring", stiffness: 320, damping: 20 }}>
+            <span><b>That's not decoration.</b> {coarse ? "Tap" : "Click"} it.</span>
+            <span className="pp-arrow" aria-hidden><IconArrow dir="down" /></span>
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 

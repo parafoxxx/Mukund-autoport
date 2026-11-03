@@ -34,6 +34,7 @@ type UIState = {
   plan: number | null;     // one of the plan's ideas, opened from its pitch board by the road
   guide: boolean;          // the controls guide card is up
   wallNote: boolean;       // a fourth-wall note is on screen (first-time tips wait for it)
+  posterPrompt: boolean;   // the "tap the poster" tag is up (first-time tips wait for it too)
   planNote: boolean;       // it was opened from the poster on the auto: he has something to say about that
   boarded: boolean;        // has got into the auto at least once this ride (until then, we nudge)
   voiceStatus: string;     // what the voice-drive mic is up to, or what's wrong with it
@@ -50,7 +51,7 @@ let state: UIState = {
   phase: "intro", active: null, visited: [], target: null, express: false,
   nextStop: 1, distance: 0, kmh: 0, km: 0, muted: false, heard: "", reply: "", listening: false,
   offroad: false, coach: "drive", ready: false, avatarReady: false, quip: "", quipId: 0, quipVoice: "",
-  onFoot: true, mapOpen: false, profile: false, badgesOpen: false, lightbox: null, embed: null, plan: null, guide: false, wallNote: false, planNote: false, boarded: false, voiceStatus: "", voiceDrive: false, voiceHeard: "",
+  onFoot: true, mapOpen: false, profile: false, badgesOpen: false, lightbox: null, embed: null, plan: null, guide: false, wallNote: false, posterPrompt: false, planNote: false, boarded: false, voiceStatus: "", voiceDrive: false, voiceHeard: "",
   badges: [], toast: { title: "", sub: "", n: 0 }, coins: 0, smashed: 0,
 };
 
@@ -117,3 +118,15 @@ export function cue(act: Act) { sim.cue = { act, n: sim.cue.n + 1 }; }
 
 /** Where Mukund's speech bubble goes on screen. Written every frame by the avatar, read by the DOM bubble. */
 export const bubbleAnchor = { x: 0, y: 0, visible: false };
+
+/** The poster on the auto's back: where its top edge is on screen, and whether anyone has tapped it yet. */
+const POSTER_KEY = "mukund-auto-poster";
+export const poster = {
+  x: 0, y: 0, visible: false,
+  tapped: (() => { try { return localStorage.getItem(POSTER_KEY) === "1"; } catch { return false; } })(),
+};
+export function openPoster() {
+  poster.tapped = true;
+  try { localStorage.setItem(POSTER_KEY, "1"); } catch { /* storage blocked */ }
+  ui.set({ plan: 0, planNote: true });
+}
