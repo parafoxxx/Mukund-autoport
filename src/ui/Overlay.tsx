@@ -12,7 +12,7 @@ import { input } from "../game/input";
 import { audioRunning, babble, clack, setMuted, startEngine, voiceDuration, wakeAudio } from "../game/sound";
 import { nearestSample, roadHeading, SAMPLES } from "../game/track";
 import { board, EMOTES, parkAutoAhead, nearAuto, placeWalkerAtStart, toggleAuto, walkerToRoad } from "../game/Player";
-import { IconArrow, IconBolt, IconHelp, IconLink, IconMap, IconMic, IconPlay, IconReset, IconSound, IconTrophy } from "./icons";
+import { IconArrow, IconBolt, IconHelp, IconRestart, IconLink, IconMap, IconMic, IconPlay, IconReset, IconSound, IconTrophy } from "./icons";
 import { BADGES } from "../game/achievements";
 import { RouteMap, travelTo } from "./RouteMap";
 import { MiniMap } from "./MiniMap";
@@ -97,6 +97,7 @@ export function Overlay() {
       <Bubble />
       <AnimatePresence>{phase === "finale" && <Credits key="credits" />}</AnimatePresence>
       <AvatarPrompt />
+      <ControlsGuide />
       <FourthWall />
       <Loader />
     </>
@@ -503,6 +504,7 @@ function Controls() {
   const express = useUI((s) => s.express);
   const muted = useUI((s) => s.muted);
   const [help, setHelp] = useState(false);
+  const [restart, setRestart] = useState(false);
   // first-time tips: the map after chapter one, the express cut after chapter two
   const seen = useUI((s) => s.visited.length);
   const active = useUI((s) => s.active);
@@ -535,6 +537,21 @@ function Controls() {
       </Tip>
       <button className="ibtn" onClick={() => { setMuted(!muted); ui.set({ muted: !muted }); }} aria-label={muted ? "Unmute" : "Mute"}><IconSound off={muted} /></button>
       <button className="ibtn" onClick={resetToRoad} aria-label="Back on the road (R)" title="Back on the road (R)"><IconReset /></button>
+      <span className="restart-wrap">
+        <button className={"ibtn" + (restart ? " on" : "")} onClick={() => setRestart(!restart)} aria-label="Start over" title="Start over" aria-expanded={restart}><IconRestart /></button>
+        <AnimatePresence>
+          {restart && (
+            <motion.div className="glass restart-pop" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
+              <p><b>Start over from the beginning?</b></p>
+              <p className="restart-sub">Back to the title screen. This ride's chapters, coins and fare reset.</p>
+              <div className="restart-row">
+                <button className="btn-primary sm" onClick={() => location.reload()} autoFocus>Start over</button>
+                <button className="btn-ghost sm" onClick={() => setRestart(false)}>Keep riding</button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </span>
       <button className={"ibtn" + (help ? " on" : "")} onClick={() => setHelp(!help)} aria-label="Help" aria-expanded={help}><IconHelp /></button>
       <AnimatePresence>
         {help && (
@@ -552,7 +569,10 @@ function Controls() {
               <li><span><kbd>R</kbd></span>Back on the road</li>
               <li><span><kbd>H</kbd></span>Horn</li>
             </ul>
-            <button className="btn-ghost sm" onClick={() => { setHelp(false); ui.set({ phase: "finale", active: null, target: null, express: false }); }}>Skip to the end credits</button>
+            <div className="help-row">
+              <button className="btn-ghost sm" onClick={() => { setHelp(false); ui.set({ guide: true }); }}>Show the controls guide</button>
+              <button className="btn-ghost sm" onClick={() => { setHelp(false); ui.set({ phase: "finale", active: null, target: null, express: false }); }}>Skip to the end credits</button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -635,6 +655,70 @@ function Hint() {
   );
 }
 
+
+/* ---------- the controls guide: the first time he's on foot, and any time from Help ---------- */
+const GUIDE_KEY = "mukund-auto-guide";
+const guideSeen = () => { try { return localStorage.getItem(GUIDE_KEY) === "1"; } catch { return false; } };
+const KEYS: [string[], string][] = [
+  [["W", "A", "S", "D"], "Walk, or drive"],
+  [["F"], "Get in / out"],
+  [["1", "–", "9"], "His moves"],
+  [["M"], "Route map"],
+  [["J"], "Jump to my work"],
+  [["B"], "Drive by voice"],
+  [["H"], "Horn"],
+  [["R"], "Back on the road"],
+  [["Space"], "Next, in a chapter"],
+  [["?"], "This guide"],
+];
+const TOUCH: [string, string][] = [
+  ["▲ ▼", "Walk, or drive the auto"],
+  ["◀ ▶", "Turn"],
+  ["Hop in", "Get in or out of the auto"],
+  ["Map", "Jump to any chapter"],
+  ["My work", "Straight to the decks and prototypes"],
+];
+function ControlsGuide() {
+  const open = useUI((s) => s.guide);
+  const phase = useUI((s) => s.phase);
+  const onFoot = useUI((s) => s.onFoot);
+  const active = useUI((s) => s.active);
+  const visited = useUI((s) => s.visited.length);
+  // first time: once chapter one is done and he's standing on the road
+  useEffect(() => {
+    if (guideSeen() || phase !== "ride" || !onFoot || active !== null || visited < 1) return;
+    const t = setTimeout(() => ui.set({ guide: true }), 900);
+    return () => clearTimeout(t);
+  }, [phase, onFoot, active, visited]);
+  const close = () => { try { localStorage.setItem(GUIDE_KEY, "1"); } catch { /* storage blocked */ } ui.set({ guide: false }); };
+  // walking off counts as "got it"
+  useEffect(() => {
+    if (!open) return;
+    let moved = 0;
+    const t = setInterval(() => { moved = Math.abs(walker.speed) > 1.2 || Math.abs(sim.speed) > 2 ? moved + 1 : 0; if (moved > 15) close(); }, 200);
+    return () => clearInterval(t);
+  }, [open]);
+  return (
+    <AnimatePresence>
+      {open && phase === "ride" && (
+        <motion.aside className="glass guide" role="dialog" aria-label="Controls"
+          initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16, transition: { duration: 0.25 } }} transition={{ duration: 0.45, ease: EASE }}>
+          <p className="mono guide-eyebrow">How to ride</p>
+          <h3>You're on foot. The auto's yours.</h3>
+          <ul>
+            {coarse
+              ? TOUCH.map(([k, l]) => <li key={k}><span className="guide-keys"><kbd>{k}</kbd></span>{l}</li>)
+              : KEYS.map(([ks, l]) => <li key={l}><span className="guide-keys">{ks.map((k) => (k === "–" ? <i key={k}>–</i> : <kbd key={k}>{k}</kbd>))}</span>{l}</li>)}
+          </ul>
+          <div className="guide-row">
+            <button className="btn-primary sm" onClick={close}>Let's go</button>
+            <span className="mono">{coarse ? "Help (?) shows this again" : "Start walking, or press ? for this again"}</span>
+          </div>
+        </motion.aside>
+      )}
+    </AnimatePresence>
+  );
+}
 
 /** Hop in / get out, for touch screens (and as a reminder of E on desktop). */
 function AutoPill() {

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { STOPS } from "../content";
-import { sim, ui, useUI, walker } from "../game/store";
+import { focus, sim, ui, useUI, walker } from "../game/store";
+import { nearestSample, ROAD_HALF } from "../game/track";
 import { inHall } from "../game/hall";
 
 /*
@@ -37,44 +38,54 @@ const seen: Set<string> = (() => { try { return new Set(JSON.parse(localStorage.
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...seen])); } catch { /* storage blocked */ } };
 
 const COMEBACK = STOPS.findIndex((s) => s.id === "comeback");
+/** Reactions to something you just did: these cut in, rather than wait their turn. */
+const ACTIONS = new Set(["offroad", "reverse", "smash", "honk", "express"]);
+type Note = { wall: Wall; text: string };
 
 export function FourthWall() {
-  const [note, setNote] = useState<{ wall: Wall; text: string } | null>(null);
+  const [note, setNote] = useState<Note | null>(null);
   const queue = useRef<string[]>([]);
+  const current = useRef<{ note: Note | null; at: number }>({ note: null, at: 0 });
+  const show = (n: Note | null) => { current.current = { note: n, at: performance.now() }; setNote(n); };
   const phase = useUI((s) => s.phase);
   useEffect(() => {
     const want = (id: string) => { if (!seen.has(id) && !queue.current.includes(id)) queue.current.push(id); };
-    let lastInput = performance.now(), rideStart = 0, offFor = 0, backFor = 0, inChapterFor = 0, finaleFor = 0, shownAt = 0;
+    let lastInput = performance.now(), lastTick = performance.now(), rideStart = 0, offFor = 0, backFor = 0, inChapterFor = 0, finaleFor = 0;
     const honks0 = sim.honks;
     const poke = () => { lastInput = performance.now(); };
     addEventListener("keydown", poke); addEventListener("pointerdown", poke); addEventListener("pointermove", poke);
     const tick = window.setInterval(() => {
-      const s = ui.get(), now = performance.now(), dt = 0.5;
+      const s = ui.get(), now = performance.now(), dt = Math.min(2, (now - lastTick) / 1000); // real seconds, however busy the page is
+      lastTick = now;
       if (s.phase === "intro") return;
       if (!rideStart) rideStart = now;
       // what they did
-      offFor = s.offroad ? offFor + dt : 0; if (offFor > 3) want("offroad");
+      // three seconds driving with the wheels off the tarmac (walking across a field to a landmark is fine)
+      const off = s.phase === "ride" && !s.onFoot && s.active === null && nearestSample(focus()).dist > ROAD_HALF + 0.6 && !inHall(focus());
+      offFor = off ? offFor + dt : 0; if (offFor >= 3) want("offroad");
       backFor = !s.onFoot && sim.speed < -2.5 ? backFor + dt : 0; if (backFor > 2.5) want("reverse");
       if (s.smashed >= 3) want("smash");
       if (sim.honks - honks0 >= 5) want("honk");
-      if (s.express) want("express");
+      if (s.express) want("express"); // first time only: Express cut, or "Watch the film" from the title
       if (s.onFoot && inHall(walker.pos)) want("hall");
       inChapterFor = s.active === COMEBACK ? inChapterFor + dt : 0; if (inChapterFor > 6) want("comeback");
       finaleFor = s.phase === "finale" ? finaleFor + dt : 0; if (finaleFor > 5) want("finish");
       if (s.phase === "ride" && s.active === null && now - lastInput > 35000) want("idle");
-      // show the next one when the screen is calm (not over the map, a photo, the plan, a first-time tip or another note)
-      const busy = s.mapOpen || s.plan !== null || s.embed || s.lightbox || s.badgesOpen || Boolean(document.querySelector(".ftip"));
-      setNote((cur) => {
-        if (cur && now - shownAt > 16000) { return null; }
-        if (cur || busy || !queue.current.length) return cur;
-        const id = queue.current.shift()!;
-        seen.add(id); save(); shownAt = now;
-        const wall = WALLS[id];
-        return { wall, text: wall.body({ minutes: Math.round((now - rideStart) / 60000) }) };
-      });
-    }, 500);
+      // show the next one straight away, unless the map, a photo, the plan or the guide is up (first-time tips make way)
+      const busy = s.mapOpen || s.plan !== null || s.embed || s.lightbox || s.badgesOpen || s.guide;
+      const cur = current.current, up = now - cur.at;
+      if (cur.note && up > 16000) { show(null); return; }
+      if (busy || !queue.current.length) return;
+      // a fresh reaction replaces an older note once it has had 3 seconds on screen
+      if (cur.note && !(ACTIONS.has(queue.current[0]) && up > 3000)) return;
+      const id = queue.current.shift()!;
+      seen.add(id); save();
+      const wall = WALLS[id];
+      show({ wall, text: wall.body({ minutes: Math.round((now - rideStart) / 60000) }) });
+    }, 250);
     return () => { window.clearInterval(tick); removeEventListener("keydown", poke); removeEventListener("pointerdown", poke); removeEventListener("pointermove", poke); };
   }, []);
+  useEffect(() => { ui.set({ wallNote: note !== null }); }, [note]);
   if (phase === "intro") return null;
   return (
     <AnimatePresence>
@@ -86,7 +97,7 @@ export function FourthWall() {
           <p>{note.text}</p>
           <div className="wn-row">
             <span className="wn-sign">— Mukund</span>
-            <button onClick={() => setNote(null)}>Ha. Okay.</button>
+            <button onClick={() => show(null)}>Ha. Okay.</button>
           </div>
         </motion.aside>
       )}

@@ -32,6 +32,8 @@ type UIState = {
   lightbox: { stop: number; index: number } | null; // a chapter photo open full screen
   embed: string | null;    // a live page (the Meesho prototype) open in a window inside the ride
   plan: number | null;     // one of the plan's ideas, opened from its pitch board by the road
+  guide: boolean;          // the controls guide card is up
+  wallNote: boolean;       // a fourth-wall note is on screen (first-time tips wait for it)
   planNote: boolean;       // it was opened from the poster on the auto: he has something to say about that
   boarded: boolean;        // has got into the auto at least once this ride (until then, we nudge)
   voiceStatus: string;     // what the voice-drive mic is up to, or what's wrong with it
@@ -48,7 +50,7 @@ let state: UIState = {
   phase: "intro", active: null, visited: [], target: null, express: false,
   nextStop: 1, distance: 0, kmh: 0, km: 0, muted: false, heard: "", reply: "", listening: false,
   offroad: false, coach: "drive", ready: false, avatarReady: false, quip: "", quipId: 0, quipVoice: "",
-  onFoot: true, mapOpen: false, profile: false, badgesOpen: false, lightbox: null, embed: null, plan: null, planNote: false, boarded: false, voiceStatus: "", voiceDrive: false, voiceHeard: "",
+  onFoot: true, mapOpen: false, profile: false, badgesOpen: false, lightbox: null, embed: null, plan: null, guide: false, wallNote: false, planNote: false, boarded: false, voiceStatus: "", voiceDrive: false, voiceHeard: "",
   badges: [], toast: { title: "", sub: "", n: 0 }, coins: 0, smashed: 0,
 };
 

@@ -696,3 +696,23 @@ kbd {
 .wn-row button { height: 28px; padding: 0 12px; border: 1px solid #d9b85a; border-radius: 999px; background: transparent; color: #2a1e10; font: 600 12px var(--sans); cursor: pointer; }
 .wn-row button:hover { background: #ffe98a; }
 @media (max-width: 700px) { .wall-note { top: auto; bottom: 150px; right: 16px; } }
+
+/* ---------- start over ---------- */
+.restart-wrap { position: relative; display: inline-flex; }
+.restart-pop { position: absolute; top: calc(100% + 10px); right: 0; z-index: 40; width: 260px; padding: 14px 16px; border-radius: 14px; text-align: left; display: grid; gap: 6px; }
+.restart-pop b { color: var(--paper); font-size: 14px; }
+.restart-sub { font-size: 12.5px; line-height: 1.45; color: var(--paper-dim); }
+.restart-row { display: flex; gap: 8px; margin-top: 6px; }
+.help-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+
+/* ---------- the controls guide ---------- */
+.guide { position: fixed; z-index: 30; left: max(20px, 2vw); top: 150px; width: min(440px, calc(100vw - 32px)); max-height: calc(100vh - 170px); overflow-y: auto; padding: 16px 20px 14px; border-radius: 18px; }
+.guide-eyebrow { font-size: 10px; letter-spacing: 0.14em; color: var(--saffron); }
+.guide h3 { margin-top: 4px; font: 400 21px/1.15 var(--serif); color: var(--paper); }
+.guide ul { list-style: none; margin: 12px 0 2px; padding: 0; display: grid; grid-template-columns: auto auto; gap: 8px 18px; }
+.guide li { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--paper-dim); white-space: nowrap; }
+.guide-keys { display: inline-flex; flex-wrap: nowrap; gap: 3px; align-items: center; }
+.guide-keys i { font-style: normal; color: var(--paper-faint); }
+.guide-row { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.guide-row .mono { font-size: 9.5px; color: var(--paper-faint); }
+@media (max-width: 700px) { .guide { top: 84px; max-height: calc(100vh - 300px); } .guide ul { grid-template-columns: 1fr; } }

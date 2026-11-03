@@ -22,6 +22,9 @@ export const IconMap = () => (
 export const IconReset = () => (
   <svg {...base}><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5" /></svg>
 );
+export const IconRestart = () => (
+  <svg {...base}><path d="M20 12a8 8 0 1 1-2.4-5.7M20 4v4.5h-4.5" /><path d="M10 9.2v5.6l4.6-2.8z" /></svg>
+);
 export const IconHelp = () => (
   <svg {...base}><circle cx="12" cy="12" r="9" /><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.1-2.4 3.6M12 17h.01" /></svg>
 );

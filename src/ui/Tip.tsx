@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useUI } from "../game/store";
 
 /*
  * First-time tips: a small card beside a feature, shown once per visitor, never two at a time.
@@ -36,8 +37,10 @@ type Props = {
   anchor: ReactNode;
 };
 
-export function Tip({ id, when, delay = 1500, place = "below", align = "right", title, children, action, anchor }: Props) {
+export function Tip({ id, when: moment, delay = 1500, place = "below", align = "right", title, children, action, anchor }: Props) {
   const cur = useSyncExternalStore(subscribe, () => open);
+  const busy = useUI((s) => s.guide || s.wallNote);
+  const when = moment && !busy; // never over the controls guide or one of his notes
   const [ready, setReady] = useState(false);
   useEffect(() => {
     if (!when || seen.has(id)) { setReady(false); return; }

@@ -35,6 +35,8 @@ export default function App() {
     if (s.lightbox) { lightboxKey(code); return; }
     if (s.embed) { if (code === "Escape") ui.set({ embed: null }); return; }
     if (planKey(code)) return;
+    if (s.guide && (code === "Escape" || code === "Enter")) { ui.set({ guide: false }); try { localStorage.setItem("mukund-auto-guide", "1"); } catch { /* storage blocked */ } return; }
+    if (code === "Slash" && s.phase === "ride") { ui.set({ guide: !s.guide }); return; }
     if (code === "KeyH") horn();
     if (code === "KeyR" && s.phase === "ride") resetToRoad();
     if (code === "Enter" && s.onFoot && s.active === null && exhibitAction()) return;
