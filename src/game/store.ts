@@ -27,7 +27,6 @@ type UIState = {
   quipId: number;          // bumps on every new line, so the same line can be said twice
   quipVoice: string;       // id of the recorded clip for this line ("" = babble)
   onFoot: boolean;         // walking around as Mukund (the auto tags along) vs driving it
-  thinking: boolean;       // waiting on Mukund's AI reply
   mapOpen: boolean;        // the route map is up
   lightbox: { stop: number; index: number } | null; // a chapter photo open full screen
   embed: string | null;    // a live page (the Meesho prototype) open in a window inside the ride
@@ -46,7 +45,7 @@ let state: UIState = {
   phase: "intro", active: null, visited: [], target: null, express: false,
   nextStop: 1, distance: 0, kmh: 0, km: 0, muted: false, heard: "", reply: "", listening: false,
   offroad: false, coach: "drive", ready: false, avatarReady: false, quip: "", quipId: 0, quipVoice: "",
-  onFoot: true, thinking: false, mapOpen: false, badgesOpen: false, lightbox: null, embed: null, boarded: false, voiceStatus: "", voiceDrive: false, voiceHeard: "",
+  onFoot: true, mapOpen: false, badgesOpen: false, lightbox: null, embed: null, boarded: false, voiceStatus: "", voiceDrive: false, voiceHeard: "",
   badges: [], toast: { title: "", sub: "", n: 0 }, coins: 0, smashed: 0,
 };
 

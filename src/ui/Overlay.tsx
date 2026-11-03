@@ -107,9 +107,7 @@ function Bubble() {
     if (!quip) return;
     setOpen(true); setShown("");
     // with a real recording, type at his speaking pace so the words land as he says them
-    // (the browser's own speech voice has no clip to measure, so estimate its pace)
-    const tts = ui.get().quipVoice === "tts";
-    const dur = tts ? quip.length * 0.068 : voiceDuration(ui.get().quipVoice);
+    const dur = voiceDuration(ui.get().quipVoice);
     const hasVoice = dur > 0;
     const step = hasVoice ? Math.min(120, Math.max(30, (dur * 1000 * 0.9) / quip.length)) : 42;
     let i = 0;
@@ -118,7 +116,7 @@ function Bubble() {
       setShown(quip.slice(0, i));
       const ch = quip[i - 1];
       if (/[a-z0-9]/i.test(ch ?? "")) {
-        if (!hasVoice || tts) sim.talk = 1; // a real clip drives the nod by its loudness instead
+        if (!hasVoice) sim.talk = 1; // a real clip drives the nod by its loudness instead
         if (!hasVoice && i % 2 === 0) babble();
       }
       if (i >= quip.length) window.clearInterval(type);

@@ -185,15 +185,18 @@ export const EXHIBITS: Exhibit[] = [
   },
   {
     id: "sarvam", name: "Sarvam AI hackathon", kicker: "2nd place",
-    blurb: "The brief: build a working AI agent from scratch, against the clock. 45 minutes later, we were on the podium.",
-    facts: [{ n: "2nd", l: "place" }, { n: "45 min", l: "to build an agent" }],
-    links: [{ label: "Try the agent", url: "https://saravam-hackon-mgnov3vtemdfbm2uwu6vpt.streamlit.app/" }],
+    blurb: "Ek Awaaz (“One Voice”): a live two-way interpreter, so two people who share no language each hear the other in their own language, in the speaker's own cloned voice.",
+    facts: [{ n: "2nd", l: "place" }, { n: "6", l: "Sarvam models in one agent" }, { n: "Live", l: "deployed app" }],
+    links: [
+      { label: "Try Ek Awaaz", url: "https://saravam-hackon-mgnov3vtemdfbm2uwu6vpt.streamlit.app/" },
+      { label: "See the code", url: "https://github.com/parafoxxx/SARAVAM-hAckon" },
+    ],
   },
   {
     id: "pacto", name: "Pacto", kicker: "National finalist · The Ken × Zerodha 2026",
     blurb: "I led Pacto: a Hinglish voice-and-chat AI agent that keeps you accountable. In an 8-person pilot, regular no-shows turned into near-daily attendance.",
     facts: [{ n: "National finalist", l: "The Ken × Zerodha 2026" }, { n: "18", l: "test cycles on the prompts" }],
-    links: [], // add the working link here: { label: "Try Pacto", url: "https://…" }
+    links: [{ label: "See Pacto", url: "https://drive.google.com/drive/folders/1-MmQmRzocwNhphs2Kv5fsQF9HZWl4sji?usp=sharing" }],
   },
 ];
 
