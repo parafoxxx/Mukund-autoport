@@ -930,7 +930,7 @@ const CREDITS: [string, string][] = [
   ["Hackathon", "Sarvam AI · 2nd place · an agent in 45 minutes"],
   ["Favourite films", "Fight Club · Memories of Murder · Predestination · The Wailing"],
   ["Filmed on location", "Agra · Kanpur · Gurgaon · Bengaluru"],
-  ["Available", "From November · full-time · ready to move to Bengaluru"],
+  ["Available", "From May · full-time · ready to move to Bengaluru"],
   ["Dialogue", "Spoken, not typed, with Wispr Flow"],
   ["Catering", "Every chai tapri on the way"],
 ];

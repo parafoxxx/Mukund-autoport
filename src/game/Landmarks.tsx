@@ -1178,7 +1178,7 @@ function billboardTexture() {
     g.font = "italic 32px Georgia, serif"; g.fillStyle = "#5d4037";
     g.fillText("This whole ride was built by voice.", textX, 380);
     g.font = "bold 30px Georgia, serif"; g.fillStyle = "#ff3d00";
-    g.fillText("Can start in November · Bengaluru", textX, 440);
+    g.fillText("Can start in May · Bengaluru", textX, 440);
     tex.needsUpdate = true;
   };
   draw();

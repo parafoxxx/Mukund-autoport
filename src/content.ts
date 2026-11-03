@@ -144,7 +144,7 @@ export const STOPS: Stop[] = [
     id: "wispr", name: "Wispr Flow", landmark: "billboard", color: "#ff3d00", sticker: "🚀",
     title: "Last stop: Wispr Flow, Bengaluru.",
     lines: ["Growth needs someone who talks to people, ships fast and measures everything.", "I've done all three. And I built this entire ride by voice."],
-    stats: [{ n: "November", l: "can start" }, { n: "Full-time", l: "available" }, { n: "Bengaluru", l: "ready to move" }],
+    stats: [{ n: "May", l: "can start" }, { n: "Full-time", l: "available" }, { n: "Bengaluru", l: "ready to move" }],
     photo: "/photos/mukund.jpg", keywords: ["wispr", "whisper", "bengaluru", "bangalore", "job", "hire", "end", "last"],
     act: "conduct", then: "dance", quip: "Next stop: Wispr Flow. Main ready hoon.",
   },
