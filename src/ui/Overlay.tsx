@@ -1032,7 +1032,7 @@ function SayItSeeIt({ onStop }: { onStop: () => void }) {
       <button className={"say-mic" + (state === "listening" ? " on" : "")} onClick={go} disabled={state === "thinking"} style={{ "--lvl": level } as CSSProperties}>
         <IconMic />{state === "listening" ? "Done? Tap to stop" : state === "thinking" ? "Writing…" : said ? "Say another" : "Tap and speak"}
       </button>
-      <p className="mono say-note">Speech-to-text by Sarvam AI. Nothing is stored.</p>
+      <p className="mono say-note">Nothing is stored.</p>
     </section>
   );
 }
