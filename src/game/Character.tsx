@@ -4,7 +4,7 @@ import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { HERO_ACTS, HERO_GREETING, STOPS, type Act } from "../content";
 import { FIRST } from "./guest";
-import { bubbleAnchor, ESTABLISH, say, sim, ui, useUI } from "./store";
+import { beat, bubbleAnchor, ESTABLISH, say, sim, ui, useUI } from "./store";
 import { PLACEMENTS, ROAD_HALF, START, STOP_POS, STOP_U, roadHeading } from "./track";
 import { playVoice, voiceLevel } from "./sound";
 
@@ -204,13 +204,17 @@ function Avatar({ mode, chapter }: { mode: "hero" | "chapter"; chapter: number |
     }
     // chapter: gesture through the establishing shot, then the chapter's act and line on the cut to him
     const stop = STOPS[chapter!];
-    timers.current.push(window.setTimeout(() => {
+    const speak = () => {
+      clearTimers();
+      beat.spoke = true; beat.speakNow = null;
       base.current = "idle"; // after his bit he hangs about, looking around
       perform.current(stop.act, stop.then ? 3.4 : 6, stop.then);
       say(stop.quip, stop.id);
       playVoice(stop.id); // his recorded line, in sync with the cut to him
-    }, ESTABLISH * 1000 + 150));
-    return () => { clearTimers(); mixer.stopAllAction(); };
+    };
+    beat.speakNow = speak;
+    timers.current.push(window.setTimeout(speak, ESTABLISH * 1000 + 150));
+    return () => { clearTimers(); mixer.stopAllAction(); if (beat.speakNow === speak) beat.speakNow = null; };
   }, [mode, chapter, mixer]);
 
   const seenCue = useRef(sim.cue.n);

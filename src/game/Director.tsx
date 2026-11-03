@@ -1,6 +1,6 @@
 import { useFrame } from "@react-three/fiber";
 import { STOPS } from "../content";
-import { ESTABLISH, focus, sim, ui, walker } from "./store";
+import { beat, ESTABLISH, focus, sim, ui, walker } from "./store";
 import { nearestSample, ROAD_HALF, roadHeading, STOP_POS, STOP_U } from "./track";
 import { characterSpot } from "./Character";
 import { bell, fanfare, playVoice, stopVoice, voiceDuration } from "./sound";
@@ -30,6 +30,7 @@ export function openStop(i: number) {
     return;
   }
   bell();
+  beat.spoke = false;
   ui.set({ active: i, visited, target: s.express ? s.target : s.target === i ? null : s.target });
 }
 
@@ -48,6 +49,12 @@ export function closeStop(walkIn = false) {
   ui.set({ active: null });
   if (s.express) ui.set({ target: (s.active + 1) % N });
   else if (walkIn && STOPS[s.active].walkIn) walkIntoHall();
+}
+
+/** Space in a chapter: the first press cuts to his line; during or after it, the next one moves on. */
+export function chapterSpace() {
+  if (!beat.spoke && beat.speakNow) { beat.speakNow(); beat.cut++; return; }
+  closeStop(true);
 }
 
 export function startExpress() {

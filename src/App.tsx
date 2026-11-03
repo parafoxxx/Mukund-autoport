@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect } from "react";
 import { bindKeyboard } from "./game/input";
-import { closeStop } from "./game/Director";
+import { chapterSpace, closeStop } from "./game/Director";
 import { horn, probeVoices, setMuted, wakeAudio } from "./game/sound";
 import { VOICE_IDS } from "./content";
 import { cue, ui, walker } from "./game/store";
@@ -39,7 +39,8 @@ export default function App() {
     if (code === "KeyF" || code === "KeyE" || (code === "Enter" && s.active === null)) { const msg = toggleAuto(); if (msg) ui.set({ reply: msg }); }
     const digit = /^(?:Digit|Numpad)([1-9])$/.exec(code);
     if (digit && s.onFoot && s.active === null) cue(EMOTES[+digit[1] - 1]);
-    if ((code === "Space" || code === "Enter" || code === "Escape") && s.active !== null) closeStop(code !== "Escape");
+    if (code === "Space" && s.active !== null) chapterSpace();
+    else if ((code === "Enter" || code === "Escape") && s.active !== null) closeStop(code !== "Escape");
   }), []);
 
   // the score is set up straight away (and plays at once if the browser allows it);

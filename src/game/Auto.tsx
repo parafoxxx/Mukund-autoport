@@ -6,7 +6,7 @@ import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js
 import { ME, STOPS, type Act } from "../content";
 import { FIRST } from "./guest";
 import { input, driving } from "./input";
-import { bubbleAnchor, ESTABLISH, focus, sim, ui, walker } from "./store";
+import { beat, bubbleAnchor, ESTABLISH, focus, sim, ui, walker } from "./store";
 import { BOUNDS, COLLIDERS, CURVE, PLACEMENTS, ROAD_HALF, SAMPLES, SAMPLE_COUNT, START, STOP_POS, STOP_U, guidePoint, nearestSample } from "./track";
 import { FONT_MONO, FONT_SERIF } from "./Roadside";
 import { AVATAR_URL, characterSpot, heroSpot, useActs } from "./Character";
@@ -323,6 +323,7 @@ export function CameraRig() {
   const shotT0 = useRef(0);
   const closeDir = useRef(new THREE.Vector3(0, 0, 1));
   const lastActive = useRef<number | null>(null);
+  const cutSeen = useRef(0);
   const lastShot = useRef<Shot>("none"); // "none" makes the very first frame a cut straight into the opening shot
   const film = useRef({ kind: "chase" as "chase" | "driveby" | "front" | "drone", until: 0, next: 0, anchor: new THREE.Vector3() });
   const roll = useRef(0);
@@ -356,6 +357,7 @@ export function CameraRig() {
         orbitStart.current = shot.start; radius.current = shot.r; shotT0.current = clock.elapsedTime;
         closeDir.current = planCloseUp(stop);
       }
+      if (beat.cut !== cutSeen.current) { cutSeen.current = beat.cut; shotT0.current = Math.min(shotT0.current, clock.elapsedTime - establish); }
       const since = clock.elapsedTime - shotT0.current;
       if (since < establish) {
         // 1. establishing shot: a slow sweep along an arc checked clear of buildings and trees

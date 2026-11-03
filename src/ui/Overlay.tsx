@@ -11,7 +11,7 @@ import { closeStop, readTime, startExpress } from "../game/Director";
 import { input } from "../game/input";
 import { audioRunning, babble, clack, setMuted, startEngine, voiceDuration, wakeAudio } from "../game/sound";
 import { nearestSample, roadHeading, SAMPLES } from "../game/track";
-import { board, EMOTES, nearAuto, placeWalkerAtStart, toggleAuto, walkerToRoad } from "../game/Player";
+import { board, EMOTES, parkAutoAhead, nearAuto, placeWalkerAtStart, toggleAuto, walkerToRoad } from "../game/Player";
 import { IconArrow, IconBolt, IconHelp, IconLink, IconMap, IconMic, IconPlay, IconReset, IconSound, IconTrophy } from "./icons";
 import { BADGES } from "../game/achievements";
 import { RouteMap, travelTo } from "./RouteMap";
@@ -33,7 +33,9 @@ function markCoached() { try { localStorage.setItem(COACH_KEY, "1"); } catch { /
 export function beginRide(express: boolean) {
   startEngine();
   placeWalkerAtStart();
-  // the express cut is a guided tour in the auto; otherwise he starts on foot beside it
+  // the express cut is a guided tour in the auto; otherwise he starts on foot,
+  // with the auto pulled up the road ahead of where he'll stand, so it's in view when the chapter ends
+  if (!express) parkAutoAhead();
   if (express) ui.set({ phase: "ride", express: true, target: 0, coach: "done", onFoot: false, boarded: true });
   else ui.set({ phase: "ride", coach: coachedBefore() ? "done" : "drive", onFoot: true });
 }

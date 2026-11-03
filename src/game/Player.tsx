@@ -7,7 +7,7 @@ import type { Act } from "../content";
 import { AVATAR_URL, heroSpot, useActs } from "./Character";
 import { input } from "./input";
 import { bubbleAnchor, cue, sim, ui, walker } from "./store";
-import { BOUNDS, COLLIDERS, START, nearestSample, roadHeading, SAMPLES } from "./track";
+import { BOUNDS, COLLIDERS, CURVE, START, STOP_U, nearestSample, roadHeading, SAMPLES } from "./track";
 import { voiceLevel } from "./sound";
 import { browse, deckAt, deckStand, ENTRANCE, INSIDE } from "./hall";
 import { count } from "./achievements";
@@ -23,6 +23,15 @@ export function placeWalkerAtStart() {
   walker.pos.copy(heroSpot().pos);
   walker.heading = START.heading;
   walker.speed = 0;
+}
+
+/** The ride on foot begins with the auto waiting just up the road, ahead of where he does chapter one,
+ *  on his side and close enough (under the 7 m it follows from) that it stays put. */
+export function parkAutoAhead() {
+  const u = Math.min(1, STOP_U[0] + 7.5 / CURVE.getLength()), at = CURVE.getPointAt(u), h = roadHeading(u);
+  sim.pos.set(at.x - Math.cos(h) * 2, 0, at.z + Math.sin(h) * 2);
+  sim.heading = h;
+  sim.speed = 0;
 }
 
 export function walkerToRoad() {

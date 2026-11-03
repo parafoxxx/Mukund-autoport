@@ -52,6 +52,9 @@ let state: UIState = {
 /** Seconds a chapter holds on its landmark before cutting to Mukund. */
 export const ESTABLISH = 3.2;
 
+/** Where a chapter is: before his line (Space cuts to it) or after (Space moves on). */
+export const beat = { spoke: false, cut: 0, speakNow: null as null | (() => void) };
+
 /** Puts a line in Mukund's speech bubble. */
 export function say(line: string, voice = "") { ui.set({ quip: line, quipId: state.quipId + 1, quipVoice: voice }); }
 const listeners = new Set<() => void>();
