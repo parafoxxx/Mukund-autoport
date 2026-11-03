@@ -17,6 +17,7 @@ import { BADGES } from "../game/achievements";
 import { RouteMap, travelTo } from "./RouteMap";
 import { MiniMap } from "./MiniMap";
 import { markTip, Tip } from "./Tip";
+import { CHARMS } from "../game/Garland";
 import { onCounts, riderNumber, track, type Counts } from "../game/counter";
 import { dictate, dictateSupported, stopDictation, type DictateState } from "../game/dictate";
 import { sayOnBillboard } from "../game/store";
@@ -264,7 +265,25 @@ function Loader() {
 }
 
 /* ---------- title sequence ---------- */
+/** The close-up on his garland: who he is, and its links as plain buttons too. */
+function ProfileCard() {
+  const links = CHARMS;
+  return (
+    <motion.div className="profile" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.5, ease: EASE }}>
+      <p className="mono eyebrow">Find me online</p>
+      <h2>{ME.name}</h2>
+      <p className="profile-role">Growth and product · IIT Kanpur, class of 2027 · Can start in May, Bengaluru</p>
+      <p className="profile-hint">My links hang on the garland. {coarse ? "Tap" : "Click"} one, or pick it here.</p>
+      <div className="profile-links">
+        {links.map((l) => <a key={l.id} className={`plink plink-${l.id}`} href={l.url} target={l.url.startsWith("mailto:") ? undefined : "_blank"} rel="noopener"><i />{l.label}</a>)}
+      </div>
+      <button className="btn-ghost sm" onClick={() => ui.set({ profile: false })}><IconArrow dir="left" />Back{!coarse && <kbd>Esc</kbd>}</button>
+    </motion.div>
+  );
+}
+
 function TitleSequence() {
+  const profile = useUI((s) => s.profile);
   const up = (d: number) => ({ initial: { opacity: 0, y: 18 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.9, delay: d, ease: EASE } });
   const primary = coarse
     ? { label: "Watch the film", on: () => beginRide(true) }
@@ -275,8 +294,9 @@ function TitleSequence() {
   return (
     <motion.div className="title-seq" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.6 } }}>
       <div className="title-scrim" />
-      <div className="title-body">
-        {coarse && <motion.p className="mono click-hint inline" {...up(2.6)}>Psst · tap Mukund. He does tricks.</motion.p>}
+      <AnimatePresence>{profile && <ProfileCard key="profile" />}</AnimatePresence>
+      <div className={"title-body" + (profile ? " away" : "")}>
+        {coarse && <motion.p className="mono click-hint inline" {...up(2.6)}>Psst · tap Mukund. He's wearing his links.</motion.p>}
         <motion.p className="mono eyebrow" {...up(0.2)}>A film by {ME.name}{GUEST && <> · made for {GUEST}</>}</motion.p>
         <motion.h1 className="film-title" initial={{ opacity: 0, clipPath: "inset(0 100% 0 0)" }} animate={{ opacity: 1, clipPath: "inset(0 0% 0 0)" }} transition={{ duration: 1.4, delay: 0.45, ease: EASE }}>
           Mukund ki <em>Auto</em>
@@ -312,8 +332,8 @@ function TitleSequence() {
           </motion.div>
         )}
       </div>
-      {!coarse && <motion.p className="mono click-hint" {...up(2.6)}>Psst · click Mukund. He does tricks.</motion.p>}
-      <motion.p className="mono title-credit" {...up(2.1)}>Written &amp; directed by voice · Wispr Flow · sound on</motion.p>
+      {!coarse && !profile && <motion.p className="mono click-hint" {...up(2.6)}>Psst · click Mukund. He's wearing his links.</motion.p>}
+      {!profile && <motion.p className="mono title-credit" {...up(2.1)}>Written &amp; directed by voice · Wispr Flow · sound on</motion.p>}
     </motion.div>
   );
 }

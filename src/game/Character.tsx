@@ -7,6 +7,7 @@ import { FIRST } from "./guest";
 import { beat, bubbleAnchor, ESTABLISH, say, sim, ui, useUI } from "./store";
 import { PLACEMENTS, ROAD_HALF, START, STOP_POS, STOP_U, roadHeading } from "./track";
 import { playVoice, voiceLevel } from "./sound";
+import { Garland } from "./Garland";
 
 /** Mukund's body (Avaturn export, carries the backflip). The other acts are animation-only files sharing its skeleton. */
 export const AVATAR_URL = "/avatar/mukund.glb";
@@ -199,7 +200,8 @@ function Avatar({ mode, chapter }: { mode: "hero" | "chapter"; chapter: number |
         if (FIRST) say(`Arre ${FIRST}! Aao, baitho, chalte hain.`);
         else { say(HERO_GREETING, "hero-greet"); playVoice("hero-greet"); }
       }, 900));
-      const loop = window.setInterval(() => heroBit.current(), 9000);
+      // every so often a trick, but not while you're looking at his garland
+      const loop = window.setInterval(() => { if (!ui.get().profile) heroBit.current(); }, 9000);
       return () => { clearInterval(loop); clearTimers(); mixer.stopAllAction(); };
     }
     // chapter: gesture through the establishing shot, then the chapter's act and line on the cut to him
@@ -243,21 +245,32 @@ function Avatar({ mode, chapter }: { mode: "hero" | "chapter"; chapter: number |
     bubbleAnchor.visible = p.z < 1 && Math.abs(p.x) < 1.1 && Math.abs(p.y) < 1.1;
   });
 
+  // on the title screen, clicking him brings the camera in close to his garland of links; he stands easy so it hangs still
+  const profile = useUI((s) => s.profile);
+  useEffect(() => {
+    if (mode !== "hero") return;
+    clearTimers();
+    if (profile) { base.current = "idle"; perform.current("idle"); say("Mala pehna di. Ab ek link pe click toh banta hai."); }
+    else { base.current = "dance"; perform.current("dance"); }
+  }, [profile, mode]);
   const hover = (on: boolean) => { document.body.style.cursor = on ? "pointer" : ""; };
   return (
     <group>
       <primitive object={scene} />
       <DirectorChair />
-      {/* an invisible, generous hit area: click him and he performs */}
-      <mesh
-        position-y={0.95}
-        onClick={(e) => { e.stopPropagation(); heroBit.current(); }}
-        onPointerOver={() => hover(true)}
-        onPointerOut={() => hover(false)}
-      >
-        <capsuleGeometry args={[0.45, 1.1, 4, 8]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-      </mesh>
+      {mode === "hero" && <Garland scene={scene} visible={profile} onOpen={(p) => window.open(p.url, p.url.startsWith("mailto:") ? "_self" : "_blank", "noopener")} />}
+      {/* an invisible, generous hit area: click him on the title screen and the camera comes in to his garland */}
+      {!profile && (
+        <mesh
+          position-y={0.95}
+          onClick={(e) => { e.stopPropagation(); if (mode === "hero") ui.set({ profile: true }); else heroBit.current(); }}
+          onPointerOver={() => hover(true)}
+          onPointerOut={() => hover(false)}
+        >
+          <capsuleGeometry args={[0.45, 1.1, 4, 8]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+      )}
     </group>
   );
 }

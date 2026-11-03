@@ -333,7 +333,17 @@ export function CameraRig() {
     const cam = camera as THREE.PerspectiveCamera;
     let ease = 1 - Math.exp(-dt * 4.5);
     let kind: Shot = "chase";
-    if (s.phase === "intro") {
+    if (s.phase === "intro" && s.profile) {
+      kind = "intro";
+      // the close-up: his chest and shoulders, framed right of centre so the card on the left stays clear
+      const hero = heroSpot();
+      const tall = cam.aspect < 1;
+      const dir = hero.fwd.clone().multiplyScalar(0.85).addScaledVector(hero.right, -0.55).normalize();
+      want.copy(hero.pos).addScaledVector(dir, tall ? 2.0 : 1.25).setY(1.45);
+      look.copy(hero.pos).setY(tall ? 1.05 : 1.36);
+      if (!tall) look.addScaledVector(new THREE.Vector3(dir.z, 0, -dir.x), -0.36);
+      ease = 1 - Math.exp(-dt * 2.4);
+    } else if (s.phase === "intro") {
       kind = "intro";
       // a composed two-shot: Mukund and his auto on the right third, the title on the left, a slow drift
       const hero = heroSpot();

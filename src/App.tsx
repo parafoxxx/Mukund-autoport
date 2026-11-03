@@ -20,6 +20,10 @@ export default function App() {
   useEffect(() => bindKeyboard((code, down) => {
     const s = ui.get();
     if (down && code === "KeyB" && s.ready && s.phase !== "finale") { if (s.voiceDrive) toggleVoiceDrive(); else voiceDriveNow(); return; }
+    if (s.phase === "intro" && s.profile) {
+      if (down && (code === "Escape" || code === "Backspace")) ui.set({ profile: false });
+      return;
+    }
     if (s.phase === "intro") {
       if (down && code === "Enter" && s.ready) beginRide(false);
       return;

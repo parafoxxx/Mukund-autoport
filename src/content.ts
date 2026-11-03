@@ -11,6 +11,7 @@ export const ME = {
     linkedin: "https://linkedin.com/in/mukund-singhal",
     email: "mailto:mukunds23@iitk.ac.in",
     github: "https://github.com/parafoxxx",
+    instagram: "https://www.instagram.com/chill_hai.official/", // TODO: your personal Instagram
     letterboxd: "https://letterboxd.com/mvkndd/",
     video: "#", // your 3-minute build video
   },
