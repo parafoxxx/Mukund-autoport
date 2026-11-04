@@ -29,7 +29,7 @@ export function Sky() {
     scene.backgroundRotation.set(0, SKY_TURN, 0);
     return () => { scene.background = null; };
   }, [scene, tex]);
-  return <Environment files="/env/sky_256.hdr" environmentIntensity={0.75} environmentRotation={[0, SKY_TURN, 0]} />;
+  return <Environment files="/env/sky_1k.hdr" environmentIntensity={0.75} environmentRotation={[0, SKY_TURN, 0]} />;
 }
 
 /* ---------- small helpers ---------- */

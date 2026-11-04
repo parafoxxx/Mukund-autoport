@@ -535,6 +535,9 @@ export function CameraRig() {
     roll.current += (lean - roll.current) * Math.min(1, dt * 4);
     cam.rotateZ(roll.current);
     if (kind === "chase" && s.phase === "ride" && !s.onFoot && s.active === null) sim.posterSeen += dt; // impressions served
+    // hero shots (the title, the mirror, a chapter close-up) get drawn sharper on balanced quality
+    const hero = s.phase === "intro" || kind === "close";
+    if (hero !== s.hero) ui.set({ hero });
     const fov = kind === "driveby" ? 34 : kind === "drone" ? 50 : fovFor(s.active, s.onFoot ? walker.speed : sim.speed);
     if (Math.abs(cam.fov - fov) > 0.05) { cam.fov += (fov - cam.fov) * 0.06; cam.updateProjectionMatrix(); }
   });
