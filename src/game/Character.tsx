@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useMemo, useRef, type ReactNode } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -50,13 +50,8 @@ export function heroSpot() {
 export function Character() {
   const phase = useUI((s) => s.phase);
   const active = useUI((s) => s.active);
-  const [hasGlb, setHasGlb] = useState<boolean | null>(null);
-  useEffect(() => {
-    fetch(AVATAR_URL, { method: "HEAD" })
-      .then((r) => r.ok && !(r.headers.get("content-type") ?? "").includes("text/html"))
-      .catch(() => false)
-      .then((ok) => { setHasGlb(ok); if (!ok) ui.set({ avatarReady: true }); });
-  }, []);
+  // he ships with the site, so load him straight away (no round trip to check the file is there first)
+  const hasGlb = true;
   useEffect(() => () => { bubbleAnchor.visible = false; }, []);
   const mode = phase === "intro" ? "hero" : active !== null ? "chapter" : null;
   if (hasGlb === null || mode === null) { bubbleAnchor.visible = false; return null; }
@@ -286,7 +281,7 @@ function Avatar({ mode, chapter }: { mode: "hero" | "chapter"; chapter: number |
 }
 
 useGLTF.preload(AVATAR_URL);
-LOADED_ACTS.forEach((a) => useGLTF.preload(actUrl(a)));
+useGLTF.preload(LOADED_ACTS.map(actUrl)); // the same list useActs asks for, so it is one cache entry, not two downloads
 
 /** A director's chair that appears whenever he sits down. */
 function DirectorChair() {

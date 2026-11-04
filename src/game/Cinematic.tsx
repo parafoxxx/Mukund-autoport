@@ -54,10 +54,10 @@ const compositeFrag = /* glsl */ `
     gl_FragColor.rgb += (hash(vUv * 1024.0 + fract(time * 7.0) * 100.0) - 0.5) * 0.028;
   }`;
 
-export function Cinematic({ rays = true }: { rays?: boolean }) {
+export function Cinematic({ rays = true, samples = 4 }: { rays?: boolean; samples?: number }) {
   const { gl, scene, camera, size, viewport } = useThree();
   const kit = useMemo(() => {
-    const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
+    const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples });
     rt.depthTexture = new THREE.DepthTexture(1, 1);
     const raysRT = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
     const raysMat = new THREE.ShaderMaterial({
@@ -76,7 +76,7 @@ export function Cinematic({ rays = true }: { rays?: boolean }) {
     const quadScene = new THREE.Scene(); quadScene.add(quad);
     const quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
     return { rt, raysRT, raysMat, compMat, quad, quadScene, quadCam };
-  }, []);
+  }, [samples]);
 
   useEffect(() => {
     const w = Math.max(1, Math.floor(size.width * viewport.dpr)), h = Math.max(1, Math.floor(size.height * viewport.dpr));

@@ -3,6 +3,8 @@ import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { Environment, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { COLLIDERS, PONDS, ROAD_HALF, SAMPLES, SAMPLE_COUNT, START, TREES, rng } from "./track";
+import { useUI } from "./store";
+import { GRASS_SHARE } from "./quality";
 
 /* ---------- sky: a real sky photo (Poly Haven, CC0) that also lights the scene ---------- */
 // a bright morning with soft grey-white clouds: Poly Haven's Kloofendal 48° Partly Cloudy (CC0)
@@ -27,7 +29,7 @@ export function Sky() {
     scene.backgroundRotation.set(0, SKY_TURN, 0);
     return () => { scene.background = null; };
   }, [scene, tex]);
-  return <Environment files="/env/sky_1k.hdr" environmentIntensity={0.75} environmentRotation={[0, SKY_TURN, 0]} />;
+  return <Environment files="/env/sky_256.hdr" environmentIntensity={0.75} environmentRotation={[0, SKY_TURN, 0]} />;
 }
 
 /* ---------- small helpers ---------- */
@@ -226,6 +228,9 @@ export function Grass() {
     im.frustumCulled = false;
     return { mesh: im, material: m };
   }, []);
+  const tier = useUI((s) => s.quality);
+  const all = useMemo(() => mesh.count, [mesh]);
+  useEffect(() => { mesh.count = Math.round(all * GRASS_SHARE[tier]); }, [mesh, all, tier]);
   useFrame(({ clock }) => { (material.userData.time as { value: number }).value = clock.elapsedTime; });
   return <primitive object={mesh} />;
 }
@@ -306,7 +311,6 @@ export function Trees() {
   });
   return <group>{meshes.map((m, i) => <primitive key={i} object={m} />)}</group>;
 }
-TREE_MODELS.forEach((m) => useGLTF.preload(m.url));
 
 /* ---------- distant hills: a soft ring of grassy rises fading into the haze ---------- */
 export function Hills() {

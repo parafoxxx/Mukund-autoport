@@ -19,6 +19,7 @@ import { MiniMap } from "./MiniMap";
 import { markTip, Tip } from "./Tip";
 import { CHARMS, openCharm } from "./links";
 import { FourthWall } from "./FourthWall";
+import { saveTier } from "../game/quality";
 import { onCounts, riderNumber, track, type Counts } from "../game/counter";
 import { dictate, dictateSupported, stopDictation, type DictateState } from "../game/dictate";
 import { sayOnBillboard } from "../game/store";
@@ -281,9 +282,9 @@ function Loader() {
   const { progress } = useProgress();
   const [gone, setGone] = useState(false);
   const [waitedEnough, setWaited] = useState(false);
-  // the opening shot stars Mukund, so wait for him, but never hold the curtain more than 10s on a slow network
+  // the opening shot stars Mukund, so wait for him, but once the scene is up, never more than 2.5 s more
   const ready = sceneReady && (avatarReady || waitedEnough);
-  useEffect(() => { const t = setTimeout(() => setWaited(true), 10000); return () => clearTimeout(t); }, []);
+  useEffect(() => { if (!sceneReady) return; const t = setTimeout(() => setWaited(true), 2500); return () => clearTimeout(t); }, [sceneReady]);
   // the reel: downloads fill the first 80%, then it keeps creeping while the GPU gets the film ready, so it never sits still
   const [pct, setPct] = useState(0);
   const live = useRef({ progress: 0, ready: false });
@@ -311,11 +312,12 @@ function Loader() {
   useEffect(() => {
     if (!ready || pct < 100 || clapped) return;
     setClapped(true);
+    ui.set({ opened: true }); // now the rest of the world can load, behind the title screen
     if (audioRunning()) clack();
   }, [ready, pct, clapped]);
   useEffect(() => {
     if (!clapped) return;
-    const t = setTimeout(() => (audioRunning() ? setGone(true) : setAskTap(true)), 700);
+    const t = setTimeout(() => (audioRunning() ? setGone(true) : setAskTap(true)), 250);
     return () => clearTimeout(t);
   }, [clapped]);
   const begin = () => { wakeAudio(); setGone(true); };
@@ -554,6 +556,7 @@ function Controls() {
   const express = useUI((s) => s.express);
   const muted = useUI((s) => s.muted);
   const [help, setHelp] = useState(false);
+  const quality = useUI((s) => s.quality);
   const [restart, setRestart] = useState(false);
   // first-time tips: the map after chapter one, the express cut after chapter two
   const seen = useUI((s) => s.visited.length);
@@ -620,6 +623,9 @@ function Controls() {
               <li><span><kbd>H</kbd></span>Horn</li>
             </ul>
             <div className="help-row">
+              <button className={"btn-ghost sm" + (quality === 0 ? " on" : "")} onClick={() => { const t = quality === 0 ? 2 : 0; ui.set({ quality: t }); saveTier(t === 0 ? 0 : null); }} aria-pressed={quality === 0}>
+                {quality === 0 ? "Smooth mode: on (tap for full detail)" : "Laggy? Turn on smooth mode"}
+              </button>
               <button className="btn-ghost sm" onClick={() => { setHelp(false); ui.set({ guide: true }); }}>Show the controls guide</button>
               <button className="btn-ghost sm" onClick={() => { setHelp(false); ui.set({ phase: "finale", active: null, target: null, express: false }); }}>Skip to the end credits</button>
             </div>

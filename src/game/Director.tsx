@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { STOPS } from "../content";
 import { beat, ESTABLISH, focus, sim, ui, walker } from "./store";
@@ -130,8 +131,17 @@ export function readTime(i: number) {
   return voice > 0 ? Math.max(reading, ESTABLISH + voice + 0.8) : reading;
 }
 
-/** Flips the ready flag once the first frame has actually rendered. */
+/** Flips the ready flag once the first frame can render without a stall: every shader is compiled up front,
+ *  in parallel where the GPU driver allows it, instead of one by one while the screen is frozen. */
 export function ReadySignal() {
-  useFrame(() => { if (!ui.get().ready) ui.set({ ready: true }); });
+  const started = useRef(false);
+  useFrame(({ gl, scene, camera }) => {
+    if (started.current || ui.get().ready) return;
+    started.current = true;
+    const done = () => ui.set({ ready: true });
+    const r = gl as unknown as { compileAsync?: (s: unknown, c: unknown) => Promise<unknown> };
+    if (r.compileAsync) r.compileAsync(scene, camera).then(done, done);
+    else done();
+  });
   return null;
 }

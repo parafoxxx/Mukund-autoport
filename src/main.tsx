@@ -16,3 +16,12 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </StrictMode>,
 );
+
+// ?trace: log the loading milestones with their times, for measuring start-up on slow machines
+if (new URLSearchParams(location.search).has("trace")) {
+  const seen = new Set<string>();
+  ui.subscribe(() => {
+    const s = ui.get();
+    for (const k of ["ready", "avatarReady", "opened"] as const) if (s[k] && !seen.has(k)) { seen.add(k); console.log(`[trace] ${k} ${(performance.now() / 1000).toFixed(2)}s`); }
+  });
+}

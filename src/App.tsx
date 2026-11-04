@@ -3,7 +3,7 @@ import { bindKeyboard } from "./game/input";
 import { chapterSpace, closeStop } from "./game/Director";
 import { horn, probeVoices, setMuted, wakeAudio } from "./game/sound";
 import { VOICE_IDS } from "./content";
-import { cue, ui, walker } from "./game/store";
+import { cue, ui, useUI, walker } from "./game/store";
 import { stepDeck } from "./game/hall";
 import { startMusic } from "./game/music";
 import { EMOTES, toggleAuto } from "./game/Player";
@@ -62,8 +62,9 @@ export default function App() {
     return () => { removeEventListener("pointerdown", go); removeEventListener("keydown", go); };
   }, []);
 
-  // find out which chapters Mukund has recorded (public/voice/<id>.mp3)
-  useEffect(() => { probeVoices(VOICE_IDS); }, []);
+  // his recorded lines load just after the opening shot is up, so they don't compete with it
+  const ready = useUI((s) => s.ready && s.opened);
+  useEffect(() => { if (!ready) return; const t = setTimeout(() => probeVoices(VOICE_IDS), 1500); return () => clearTimeout(t); }, [ready]);
 
   // never keep the engine running in a background tab
   useEffect(() => {
