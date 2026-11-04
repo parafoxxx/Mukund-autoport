@@ -181,8 +181,7 @@ export const STOPS: Stop[] = [
     stats: [{ n: "50+", l: "on-ground field audits" }, { n: "1,663", l: "societies mapped" }, { n: "PPO", l: "pre-placement offer" }],
     photo: "/photos/nobroker.jpg", keywords: ["nobroker", "no broker", "internship", "intern", "ppo", "gurgaon"],
     link: { label: "Read the founder’s post", url: "https://www.linkedin.com/feed/update/urn:li:activity:7502967474498330624/" },
-    act: "land", quip: "Zero brokerage. Full hustle. Aur PPO bhi.",
-    quip2: "Intern tha, phir bhi founder ne mere baare mein LinkedIn post likha. Tab se main khud ko 'thought leader' bolta hoon.",
+    act: "land", quip: "Intern so goated, even the founder wrote it on his LinkedIn.",
   },
   {
     id: "cinema", name: "Drive-in", landmark: "cinema", color: "#ffd54f", sticker: "🎬",
