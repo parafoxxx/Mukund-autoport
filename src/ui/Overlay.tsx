@@ -212,10 +212,10 @@ function Bubble() {
   useEffect(() => {
     if (!quip) return;
     setOpen(true); setShown("");
-    // with a real recording, type at his speaking pace so the words land as he says them
+    // brisk, like a chat message: with a real recording the line is fully typed a little ahead of his voice
     const dur = voiceDuration(ui.get().quipVoice);
     const hasVoice = dur > 0;
-    const step = hasVoice ? Math.min(120, Math.max(30, (dur * 1000 * 0.9) / quip.length)) : 42;
+    const step = hasVoice ? Math.min(45, Math.max(16, (dur * 1000 * 0.55) / quip.length)) : 22;
     let i = 0;
     const type = window.setInterval(() => {
       i++;
@@ -1295,7 +1295,7 @@ function SayItSeeIt({ onStop }: { onStop: () => void }) {
   useEffect(() => {
     if (!said) return;
     let i = 0;
-    const t = window.setInterval(() => { i++; setTyped(said.text.slice(0, i)); if (i >= said.text.length) window.clearInterval(t); }, 34);
+    const t = window.setInterval(() => { i++; setTyped(said.text.slice(0, i)); if (i >= said.text.length) window.clearInterval(t); }, 18);
     return () => window.clearInterval(t);
   }, [said]);
   if (!dictateSupported) return null;
