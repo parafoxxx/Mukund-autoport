@@ -211,8 +211,9 @@ export function Auto() {
  *  It's what you see all ride long from the chase camera. Tap it to read the plan. */
 function posterTexture() {
   const W = 1040, H = 640;
-  const c = document.createElement("canvas"); c.width = W; c.height = H;
-  const g = c.getContext("2d")!;
+  // drawn at twice the size, so the small print stays crisp from the chase camera (made here, nothing to download)
+  const R = 2, c = document.createElement("canvas"); c.width = W * R; c.height = H * R;
+  const g = c.getContext("2d")!; g.scale(R, R);
   const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#1b1030"); bg.addColorStop(1, "#0b0814");
   g.fillStyle = bg; g.fillRect(0, 0, W, H);
   // a sunburst behind the headline, like a hand-painted film poster
@@ -220,18 +221,18 @@ function posterTexture() {
   for (let k = 0; k < 24; k++) { g.rotate(Math.PI / 12); g.fillStyle = k % 2 ? "rgba(255, 61, 0, 0.16)" : "rgba(255, 181, 71, 0.08)"; g.beginPath(); g.moveTo(0, 0); g.lineTo(-90, -700); g.lineTo(90, -700); g.fill(); }
   g.restore();
   g.textAlign = "center"; g.textBaseline = "middle";
-  g.fillStyle = "#ffb547"; g.font = "bold 40px monospace"; g.fillText("★  IF YOU HIRE ME  ★", W / 2, 76);
+  g.fillStyle = "#ffb547"; g.font = "bold 44px monospace"; g.fillText("★  IF YOU HIRE ME  ★", W / 2, 76);
   g.fillStyle = "#fff4dc"; g.font = "bold 64px monospace"; g.fillText("MY FIRST 90 DAYS AT", W / 2, 150, W - 70);
   g.fillStyle = "#ff5a1f"; g.font = "italic bold 124px Georgia, serif"; g.fillText("Wispr Flow India", W / 2, 262, W - 70);
   const colors = ["#e4007c", "#1e88e5", "#00a884"], labels = ["CREATORS", "CAMPUSES", "PRICING"];
   labels.forEach((l, k) => {
     const x = 40 + k * 330;
     g.fillStyle = colors[k]; g.beginPath(); g.roundRect(x, 360, 300, 170, 26); g.fill();
-    g.fillStyle = "rgba(255, 255, 255, 0.85)"; g.font = "bold 40px monospace"; g.fillText(String(k + 1).padStart(2, "0"), x + 150, 410);
+    g.fillStyle = "rgba(255, 255, 255, 0.85)"; g.font = "bold 46px monospace"; g.fillText(String(k + 1).padStart(2, "0"), x + 150, 410);
     g.fillStyle = "#ffffff"; g.font = "bold 62px Georgia, serif"; g.fillText(l, x + 150, 478, 270);
   });
-  g.fillStyle = "#ffb547"; g.font = "bold 36px monospace"; g.fillText("TAP TO READ THE PLAN  ↗", W / 2, 592);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  g.fillStyle = "#ffb547"; g.font = "bold 40px monospace"; g.fillText("TAP TO READ THE PLAN  ↗", W / 2, 592);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 16;
   return t;
 }
 

@@ -386,11 +386,11 @@ kbd {
 .lb-prev { left: max(2vw, 12px); top: 50%; } .lb-next { right: max(2vw, 12px); top: 50%; } .lb-close { right: max(2vw, 12px); top: max(2vw, 12px); }
 
 /* ---------- first ride: get in the auto ---------- */
-.board-prompt { position: fixed; z-index: 26; left: 50%; bottom: 128px; transform: translateX(-50%); display: flex; align-items: center; gap: 14px; padding: 10px 22px 10px 10px; border-radius: 999px; background: rgba(16, 12, 9, 0.9); border: 1px solid rgba(255, 181, 71, 0.6); color: var(--paper); font: 500 16px var(--sans); cursor: pointer; box-shadow: 0 0 0 0 rgba(255, 181, 71, 0.4); animation: bpPulse 1.8s ease-in-out infinite; white-space: nowrap; }
+.board-prompt { position: fixed; z-index: 26; right: 24px; bottom: 104px; display: flex; align-items: center; gap: 14px; padding: 10px 22px 10px 10px; border-radius: 999px; background: rgba(16, 12, 9, 0.9); border: 1px solid rgba(255, 181, 71, 0.6); color: var(--paper); font: 500 16px var(--sans); cursor: pointer; box-shadow: 0 0 0 0 rgba(255, 181, 71, 0.4); animation: bpPulse 1.8s ease-in-out infinite; white-space: nowrap; }
 .board-prompt b { color: var(--saffron); font-weight: 600; }
 .bp-key { display: grid; place-items: center; min-width: 40px; height: 40px; padding: 0 8px; border-radius: 10px; background: var(--saffron); color: #1a1008; font: 700 18px var(--mono); }
 @keyframes bpPulse { 50% { box-shadow: 0 0 0 10px rgba(255, 181, 71, 0); } }
-@media (max-width: 700px) { .board-prompt { bottom: 220px; font-size: 14px; white-space: normal; max-width: calc(100vw - 32px); } }
+@media (max-width: 700px) { .board-prompt { right: auto; left: 16px; bottom: 220px; font-size: 14px; white-space: normal; max-width: calc(100vw - 32px); } }
 
 /* the loader's last frame: one tap, and the film starts with its score */
 .loader .begin { margin-top: 26px; animation: vdglow 2.4s ease-in-out infinite; }
