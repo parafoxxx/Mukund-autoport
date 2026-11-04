@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 import { STOPS } from "../content";
 import { beat, ESTABLISH, focus, sim, ui, walker } from "./store";
 import { nearestSample, ROAD_HALF, roadHeading, STOP_POS, STOP_U } from "./track";
@@ -138,10 +139,18 @@ export function ReadySignal() {
   useFrame(({ gl, scene, camera }) => {
     if (started.current || ui.get().ready) return;
     started.current = true;
-    const done = () => ui.set({ ready: true });
+    const trace = location.search.includes("trace");
+    if (trace) console.log(`[trace] firstFrame ${(performance.now() / 1000).toFixed(2)}s`);
+    const done = () => { if (trace) console.log(`[trace] compiled ${(performance.now() / 1000).toFixed(2)}s programs ${gl.info.programs?.length}`); ui.set({ ready: true }); };
     const r = gl as unknown as { compileAsync?: (s: unknown, c: unknown) => Promise<unknown> };
-    if (r.compileAsync) r.compileAsync(scene, camera).then(done, done);
-    else done();
+    if (!r.compileAsync) { done(); return; }
+    // with the film look on, the scene is drawn into a buffer, not straight to the screen, and three.js builds a
+    // different shader for that (linear colour, no tone mapping). Compile that one, or every material gets built twice.
+    const prev = gl.getRenderTarget(), into = ui.get().quality > 0 ? new THREE.WebGLRenderTarget(1, 1) : null;
+    if (into) gl.setRenderTarget(into);
+    const job = r.compileAsync(scene, camera);
+    if (into) gl.setRenderTarget(prev);
+    job.then(done, done).finally(() => into?.dispose());
   });
   return null;
 }
