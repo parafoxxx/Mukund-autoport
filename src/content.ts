@@ -96,6 +96,7 @@ export type Stop = {
   act: Act;              // what Mukund does when he steps out at this chapter
   then?: Act;            // a follow-up act, straight after the first
   quip: string;          // his one-liner in the speech bubble
+  quip2?: string;        // a second line, typed into the bubble once the recorded one has played
 };
 
 export const STOPS: Stop[] = [
@@ -181,6 +182,7 @@ export const STOPS: Stop[] = [
     photo: "/photos/nobroker.jpg", keywords: ["nobroker", "no broker", "internship", "intern", "ppo", "gurgaon"],
     link: { label: "Read the founder’s post", url: "https://www.linkedin.com/feed/update/urn:li:activity:7502967474498330624/" },
     act: "land", quip: "Zero brokerage. Full hustle. Aur PPO bhi.",
+    quip2: "Intern tha, phir bhi founder ne mere baare mein LinkedIn post likha. Tab se main khud ko 'thought leader' bolta hoon.",
   },
   {
     id: "cinema", name: "Drive-in", landmark: "cinema", color: "#ffd54f", sticker: "🎬",

@@ -750,7 +750,7 @@ function ControlsGuide() {
   }, [open]);
   return (
     <AnimatePresence>
-      {open && phase === "ride" && (
+      {open && phase === "ride" && active === null && (
         <motion.aside className="glass guide" role="dialog" aria-label="Controls"
           initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16, transition: { duration: 0.25 } }} transition={{ duration: 0.45, ease: EASE }}>
           <p className="mono guide-eyebrow">How to ride</p>

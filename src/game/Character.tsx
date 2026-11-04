@@ -6,7 +6,7 @@ import { HERO_ACTS, HERO_GREETING, STOPS, type Act } from "../content";
 import { FIRST } from "./guest";
 import { beat, bubbleAnchor, ESTABLISH, say, sim, ui, useUI } from "./store";
 import { PLACEMENTS, ROAD_HALF, START, STOP_POS, STOP_U, roadHeading } from "./track";
-import { bell, playVoice, voiceLevel } from "./sound";
+import { bell, playVoice, voiceDuration, voiceLevel } from "./sound";
 import { MirrorScene } from "./Mirror";
 
 /** Mukund's body (Avaturn export, carries the backflip). The other acts are animation-only files sharing its skeleton. */
@@ -221,6 +221,8 @@ function Avatar({ mode, chapter }: { mode: "hero" | "chapter"; chapter: number |
       perform.current(stop.act, stop.then ? 3.4 : 6, stop.then);
       say(stop.quip, stop.id);
       playVoice(stop.id); // his recorded line, in sync with the cut to him
+      // a follow-up line in the bubble once the recorded one has finished
+      if (stop.quip2) timers.current.push(window.setTimeout(() => say(stop.quip2!), (voiceDuration(stop.id) || 2.5) * 1000 + 900));
     };
     beat.speakNow = speak;
     timers.current.push(window.setTimeout(speak, ESTABLISH * 1000 + 150));
