@@ -64,6 +64,8 @@ export default function Scene() {
           else if (tier > 0) ui.set({ quality: (tier - 1) as Tier });
         }}
         onIncline={() => setDpr((d) => Math.min(maxDpr, d + 0.15))}
+        // only step down when it's genuinely struggling (under 24 fps); 25-30 fps with the film look beats 50 without it
+        bounds={(refresh) => [24, refresh > 90 ? 75 : 55]}
         flipflops={4}
       />
       <fog attach="fog" args={[HAZE, 120, 420]} />

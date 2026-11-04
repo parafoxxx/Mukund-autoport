@@ -29,11 +29,28 @@ const raysFrag = /* glsl */ `
   }`;
 
 const compositeFrag = /* glsl */ `
-  uniform sampler2D tScene; uniform sampler2D tRays; uniform vec2 sun; uniform float aspect, sunVis, rays, time;
+  uniform sampler2D tScene; uniform sampler2D tRays; uniform vec2 sun, texel; uniform float aspect, sunVis, rays, time, fxaa;
   varying vec2 vUv;
   float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+  float lum(vec3 c) { float l = dot(c, vec3(0.299, 0.587, 0.114)); return l / (1.0 + l); }
+  // FXAA (the light version): smooths jagged edges along their direction, for a fraction of MSAA's cost
+  vec3 scene(vec2 uv) {
+    vec3 m = texture2D(tScene, uv).rgb;
+    if (fxaa < 0.5) return m;
+    float lNW = lum(texture2D(tScene, uv + vec2(-1.0, -1.0) * texel).rgb), lNE = lum(texture2D(tScene, uv + vec2(1.0, -1.0) * texel).rgb);
+    float lSW = lum(texture2D(tScene, uv + vec2(-1.0, 1.0) * texel).rgb), lSE = lum(texture2D(tScene, uv + vec2(1.0, 1.0) * texel).rgb);
+    float lM = lum(m);
+    float lMin = min(lM, min(min(lNW, lNE), min(lSW, lSE))), lMax = max(lM, max(max(lNW, lNE), max(lSW, lSE)));
+    vec2 dir = vec2(-((lNW + lNE) - (lSW + lSE)), (lNW + lSW) - (lNE + lSE));
+    float reduce = max((lNW + lNE + lSW + lSE) * 0.03125, 1.0 / 128.0);
+    dir = clamp(dir / (min(abs(dir.x), abs(dir.y)) + reduce), vec2(-8.0), vec2(8.0)) * texel;
+    vec3 a = 0.5 * (texture2D(tScene, uv + dir * (1.0 / 3.0 - 0.5)).rgb + texture2D(tScene, uv + dir * (2.0 / 3.0 - 0.5)).rgb);
+    vec3 b = a * 0.5 + 0.25 * (texture2D(tScene, uv - dir * 0.5).rgb + texture2D(tScene, uv + dir * 0.5).rgb);
+    float lB = lum(b);
+    return (lB < lMin || lB > lMax) ? a : b;
+  }
   void main() {
-    vec3 col = texture2D(tScene, vUv).rgb;
+    vec3 col = scene(vUv);
     vec3 gold = vec3(1.0, 0.88, 0.68); // morning sun: warm white, not orange
     // god rays and a soft halo round the sun
     col += texture2D(tRays, vUv).rgb * gold * 1.8 * sunVis * rays;
@@ -69,6 +86,7 @@ export function Cinematic({ rays = true, samples = 4 }: { rays?: boolean; sample
       uniforms: {
         tScene: { value: rt.texture }, tRays: { value: raysRT.texture }, sun: { value: new THREE.Vector2() },
         aspect: { value: 1 }, sunVis: { value: 0 }, rays: { value: 1 }, time: { value: 0 },
+        texel: { value: new THREE.Vector2(1, 1) }, fxaa: { value: samples > 0 ? 0 : 1 },
       },
     });
     const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), compMat);
@@ -81,6 +99,7 @@ export function Cinematic({ rays = true, samples = 4 }: { rays?: boolean; sample
   useEffect(() => {
     const w = Math.max(1, Math.floor(size.width * viewport.dpr)), h = Math.max(1, Math.floor(size.height * viewport.dpr));
     kit.rt.setSize(w, h);
+    kit.compMat.uniforms.texel.value.set(1 / w, 1 / h);
     kit.raysRT.setSize(Math.max(1, w >> 2), Math.max(1, h >> 2));
   }, [kit, size, viewport.dpr]);
 

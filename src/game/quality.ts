@@ -1,6 +1,6 @@
 /**
- * How much 3D the device can take. 2 = the full film look, 1 = lighter (no god rays, no extra anti-aliasing,
- * smaller shadows, half the grass), 0 = smooth mode (no film pass, no shadows, a quarter of the grass, lower resolution).
+ * How much 3D the device can take. 2 = the full film look, 1 = balanced (the same look without god rays, FXAA instead
+ * of 4x MSAA, smaller shadows, half the grass), 0 = smooth mode (no film pass, no shadows, a quarter of the grass).
  * We start from a guess (the GPU's name, the screen, a saved choice or ?quality=), then the frame-rate monitor
  * steps down further if it has to.
  */
@@ -19,11 +19,12 @@ export function initialTier(): Tier {
     const ext = gl?.getExtension("WEBGL_debug_renderer_info");
     renderer = ext && gl ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : "";
   } catch { /* no WebGL info */ }
-  // software rendering, laptop-class integrated graphics and phones: smooth mode. Measured on an Intel UHD 630:
-  // ~50 fps here, single digits with the full film look, and a far shorter shader compile before the first frame
+  // software rendering: smooth mode. Laptop-class integrated graphics and phones: balanced, the full film look and
+  // shadows at full resolution, minus the god rays and 4x MSAA (FXAA instead), which is what made them crawl.
+  // If even that can't keep up, the frame-rate monitor drops them to smooth mode.
   if (/swiftshader|llvmpipe|software|microsoft basic/i.test(renderer)) return 0;
-  if (/intel|uhd|iris|hd graphics|radeon\(tm\) graphics|vega \d|mali|adreno|powervr/i.test(renderer)) return 0;
-  if (Math.min(innerWidth, innerHeight) < 600) return 0;
+  if (/intel|uhd|iris|hd graphics|radeon\(tm\) graphics|vega \d|mali|adreno|powervr/i.test(renderer)) return 1;
+  if (Math.min(innerWidth, innerHeight) < 600) return 1;
   return 2;
 }
 
@@ -34,8 +35,8 @@ export function saveTier(t: Tier | null) {
 
 /** Resolution range for each tier. */
 export const DPR: Record<Tier, { start: number; min: number; max: number }> = {
-  0: { start: 0.7, min: 0.6, max: 0.85 },
-  1: { start: 0.9, min: 0.75, max: 1.1 },
+  0: { start: 1, min: 0.75, max: 1 },
+  1: { start: 1, min: 0.8, max: 1.25 },
   2: { start: 1, min: 1, max: 1.5 },
 };
 export const GRASS_SHARE: Record<Tier, number> = { 0: 0.25, 1: 0.5, 2: 1 };
