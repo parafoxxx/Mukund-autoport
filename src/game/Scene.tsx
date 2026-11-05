@@ -23,7 +23,7 @@ ui.set({ quality: initialTier() });
 function SunLight() {
   const light = useRef<THREE.DirectionalLight>(null);
   const tier = useUI((s) => s.quality);
-  const sharp = useUI((s) => s.quality === 2 || (s.quality === 1 && s.hero && s.opened));
+  const sharp = useUI((s) => s.quality === 2 || (s.quality === 1 && s.hero && s.opened && !s.heroOff));
   // a bigger shadow map for hero shots: resizing it reallocates the map, but recompiles nothing
   useEffect(() => {
     const l = light.current; if (!l) return;
@@ -64,14 +64,15 @@ export default function Scene() {
   const [dpr, setDpr] = useState(range.start);
   // hero shots on balanced quality: 4x MSAA, the sharpest edges per frame spent (33 fps on an Intel UHD 630 title
   // screen, vs 11 with a resolution boost too). Never while loading, so the curtain isn't held up.
-  const hero = useUI((s) => s.hero && s.opened) && tier === 1;
+  const hero = useUI((s) => s.hero && s.opened && !s.heroOff) && tier === 1;
   useEffect(() => { setDpr(DPR[tier].start); }, [tier]);
   return (
     <Canvas shadows dpr={dpr} camera={{ fov: 55, near: 0.5, far: 2000, position: [30, 14, 30] }} gl={{ antialias: true, powerPreference: "high-performance", toneMappingExposure: 0.95 }}
       onCreated={({ camera, scene, gl }) => { if (import.meta.env.DEV) Object.assign(window, { __cam: camera, __scene: scene, __gl: gl }); }}>
       <PerformanceMonitor
         onDecline={() => {
-          if (ui.get().hero) return; // hero shots are slow scripted moves; a lower frame rate there is fine
+          // too slow in a hero shot: drop the extra sharpness first (for the rest of the visit), keep everything else
+          if (ui.get().hero) { if (!ui.get().heroOff) ui.set({ heroOff: true }); return; }
           // first a lower resolution, then a lighter tier (the film pass, shadows and grass go in steps)
           if (dpr > range.min + 0.01) setDpr((d) => Math.max(range.min, d - 0.15));
           else if (tier > 0) ui.set({ quality: (tier - 1) as Tier });

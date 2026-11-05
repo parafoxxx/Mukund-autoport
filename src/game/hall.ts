@@ -79,6 +79,33 @@ export function deckStand(i: number) {
   return { at, heading: Math.atan2(w.x, w.z) };
 }
 
+/* Finding your way round: walk him to the deck wall or a booth along the aisles, never through a booth. */
+function toLocal(p: { x: number; z: number }) {
+  if (!placement) return new THREE.Vector3(p.x, 0, p.z);
+  return new THREE.Vector3(p.x - placement.pos.x, 0, p.z - placement.pos.z).applyAxisAngle(UP, -placement.rotY);
+}
+export type HallPlace = "decks" | Exhibit["id"];
+/** The points to walk through, and the heading to face when he gets there. */
+export function hallRoute(from: { x: number; z: number }, to: HallPlace) {
+  const p = toLocal(from);
+  const aisle = (p.x >= 0 ? 1 : -1) * 4.4; // the aisle between the middle booth and the side ones
+  const back = HALL.wallZ + 2.4, front = 3;
+  const pts: THREE.Vector3[] = [];
+  if (to === "decks") {
+    // the screen nearest to where he is, or the first one if he's in the middle
+    const i = THREE.MathUtils.clamp(Math.round(p.x / DECK_SPACING + (DECKS.length - 1) / 2), 0, DECKS.length - 1);
+    if (p.z > back + 0.5) { if (p.z > -0.5) pts.push(toWorld(aisle, Math.max(p.z, front))); pts.push(toWorld(aisle, back)); }
+    pts.push(deckSpot(i).at.clone());
+    return { pts, heading: deckStand(i).heading };
+  }
+  const spot = SPOTS.find((s) => s.kind === "booth" && s.exhibit === to)!;
+  const b = BOOTH[to as keyof typeof BOOTH];
+  if (p.z < -0.5) { if (p.z < back + 0.5) pts.push(toWorld(aisle, back)); pts.push(toWorld(aisle, front)); }
+  pts.push(spot.at.clone());
+  const face = toWorld(b.x, b.z).sub(spot.at);
+  return { pts, heading: Math.atan2(face.x, face.z) };
+}
+
 /** The exhibit he's standing at, if any. */
 export function spotNear(p: { x: number; z: number }) {
   let best: Spot | null = null, bestD = Infinity;

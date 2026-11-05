@@ -35,7 +35,8 @@ type UIState = {
   plan: number | null;     // one of the plan's ideas, opened from its pitch board by the road
   guide: boolean;          // the controls guide card is up
   quality: 0 | 1 | 2;      // how much 3D the device gets (quality.ts); smooth mode is 0
-  hero: boolean;           // a hero shot: Mukund or the auto fill the frame (title, mirror, chapter close-up)
+  hero: boolean;
+  heroOff: boolean;        // the sharp hero shots were too much for this machine, so they're off for the session           // a hero shot: Mukund or the auto fill the frame (title, mirror, chapter close-up)
   wallNote: boolean;       // a fourth-wall note is on screen (first-time tips wait for it)
   posterPrompt: boolean;   // the "tap the poster" tag is up (first-time tips wait for it too)
   planNote: boolean;       // it was opened from the poster on the auto: he has something to say about that
@@ -54,7 +55,7 @@ let state: UIState = {
   phase: "intro", active: null, visited: [], target: null, express: false,
   nextStop: 1, distance: 0, kmh: 0, km: 0, muted: false, heard: "", reply: "", listening: false,
   offroad: false, coach: "drive", ready: false, avatarReady: false, opened: false, quip: "", quipId: 0, quipVoice: "",
-  onFoot: true, mapOpen: false, profile: false, badgesOpen: false, lightbox: null, embed: null, plan: null, guide: false, quality: 2, hero: false, wallNote: false, posterPrompt: false, planNote: false, boarded: false, voiceStatus: "", voiceDrive: false, voiceHeard: "",
+  onFoot: true, mapOpen: false, profile: false, badgesOpen: false, lightbox: null, embed: null, plan: null, guide: false, quality: 2, hero: false, heroOff: false, wallNote: false, posterPrompt: false, planNote: false, boarded: false, voiceStatus: "", voiceDrive: false, voiceHeard: "",
   badges: [], toast: { title: "", sub: "", n: 0 }, coins: 0, smashed: 0,
 };
 

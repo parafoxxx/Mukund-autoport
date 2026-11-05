@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useProgress } from "@react-three/drei";
 import { CHAPTER_COUNT_WORD, DECKS, EXHIBITS, FLOW_STATS, ME, STOPS, TOP_WINS, WISPR_PLAN } from "../content";
 import { STORIES, type Story } from "../stories";
-import { HALL_STOP, inHall, spotNear, stepDeck, type Spot } from "../game/hall";
+import { HALL_STOP, inHall, spotNear, stepDeck, type HallPlace, type Spot } from "../game/hall";
 import { startVoiceDrive, toggleVoiceDrive, voiceDriveSupported } from "../game/voiceDrive";
 import { FIRST, GUEST } from "../game/guest";
 import { bubbleAnchor, cue, openPoster, poster, sim, ui, useUI, walker } from "../game/store";
@@ -11,7 +11,7 @@ import { closeStop, readTime, startExpress } from "../game/Director";
 import { input } from "../game/input";
 import { audioRunning, babble, clack, setMuted, startEngine, voiceDuration, wakeAudio } from "../game/sound";
 import { nearestSample, roadHeading, SAMPLES } from "../game/track";
-import { board, EMOTES, parkAutoAhead, nearAuto, placeWalkerAtStart, toggleAuto, walkerToRoad } from "../game/Player";
+import { board, EMOTES, parkAutoAhead, nearAuto, placeWalkerAtStart, scripted, toggleAuto, walkerToRoad, walkInHall } from "../game/Player";
 import { IconArrow, IconBolt, IconHelp, IconRestart, IconLink, IconMap, IconMic, IconPlay, IconReset, IconSound, IconTrophy } from "./icons";
 import { BADGES } from "../game/achievements";
 import { RouteMap, travelTo } from "./RouteMap";
@@ -1052,6 +1052,28 @@ function describe(spot: Spot): Shown {
   };
 }
 
+/* Finding your way round the hall: the places, in the order worth seeing them, and what's been seen. */
+const HALL_PLACES: { id: HallPlace; label: string }[] = [
+  { id: "meesho", label: "Meesho booth · middle" },
+  { id: "sarvam", label: "Sarvam booth · right" },
+  { id: "pacto", label: "Pacto booth · left" },
+  { id: "decks", label: `The deck wall · ${DECKS.length} case comps` },
+];
+const seenInHall = new Set<HallPlace>();
+const placeOf = (key: string): HallPlace => (key.startsWith("deck") ? "decks" : (key as HallPlace));
+
+/** "What next": buttons that walk him to the places he hasn't seen yet (or all of them, once he has). */
+function HallNext({ here, title }: { here: HallPlace | null; title: string }) {
+  const left = HALL_PLACES.filter((p) => p.id !== here && !seenInHall.has(p.id));
+  const list = left.length ? left : HALL_PLACES.filter((p) => p.id !== here);
+  return (
+    <div className="hall-next">
+      <p className="mono">{left.length ? title : "You’ve seen it all · walk out to your auto and press F, or go back to"}</p>
+      <div>{list.map((p) => <button key={p.id} className="btn-ghost sm" onClick={() => walkInHall(p.id)}>{p.label}<IconArrow dir="right" /></button>)}</div>
+    </div>
+  );
+}
+
 /** Walk up to an exhibit and its card slides up: the story, the numbers, and a way in. */
 function ExhibitCard() {
   const onFoot = useUI((s) => s.onFoot);
@@ -1063,8 +1085,9 @@ function ExhibitCard() {
   toggleStory = shown?.data.story ? () => setOpen((o) => !o) : null;
   useEffect(() => {
     const t = setInterval(() => {
-      const here = onFoot && active === null;
+      const here = onFoot && active === null && !scripted(); // nothing pops up while he walks himself somewhere
       const spot = here ? spotNear(walker.pos) : null;
+      if (spot) seenInHall.add(spot.kind === "deck" ? "decks" : spot.exhibit);
       setInside(here && inHall(walker.pos));
       const key = spot ? (spot.kind === "deck" ? `deck${spot.index}` : spot.exhibit) : "";
       setShown((prev) => (prev?.key === key ? prev : spot ? { key, data: describe(spot) } : null));
@@ -1117,11 +1140,13 @@ function ExhibitCard() {
                 ))}
               </div>
             )}
+            {!shown.data.nav && inHall(walker.pos) && <HallNext here={placeOf(shown.key)} title="What next? Walk to" />}
           </div>
         </motion.div>
       ) : inside ? (
         <motion.div key="hint" className="exhibit-hint glass" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-          <IconTrophy /> Walk up to anything: decks on the back wall, Meesho in the middle, Pacto left, Sarvam right. The banners open each company's work. Done? Walk out to your auto and press F.
+          <span className="hint-line"><IconTrophy /> Walk up to anything, or pick one and he'll walk you there. The banners open each company's work.</span>
+          <HallNext here={null} title="Go to" />
         </motion.div>
       ) : null}
     </AnimatePresence>
@@ -1163,7 +1188,7 @@ function BoardPrompt() {
         <motion.button className="board-prompt" onClick={() => { const m = toggleAuto(); if (m) ui.set({ reply: m }); }}
           initial={{ opacity: 0, y: 16, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.45, ease: EASE }}>
           <span className="bp-key">{coarse ? "Tap" : "F"}</span>
-          <span><b>{near ? "Get in your auto" : "Walk to your auto"}</b>{near ? (coarse ? " and the ride begins" : " · or press Enter") : " · it’s waiting nearby"}</span>
+          <span><b>{near ? "Get in your auto" : "Move closer to your auto"}</b>{near ? (coarse ? " and the ride begins" : " · press F or Enter") : (coarse ? ", then tap here" : ", then press F")}</span>
         </motion.button>
       )}
     </AnimatePresence>

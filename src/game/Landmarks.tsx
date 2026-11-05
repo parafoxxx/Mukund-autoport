@@ -9,6 +9,9 @@ import { DECKS, EXHIBITS, ME, STOPS, WISPR_PLAN } from "../content";
 import { BOOTH, COLUMNS_Z, deckX, HALL } from "./hall";
 import { BESIDE, PLAN_ROAD, PLACEMENTS, ROAD_HALF, STOP_POS, STOP_U, rng, roadHeading } from "./track";
 import { FONT_MONO, FONT_SERIF } from "./Roadside";
+import { ClickTag } from "./ClickTag";
+
+const stopOf = (id: string) => STOPS.findIndex((s) => s.id === id);
 
 const MARBLE = "#e8dcc6";
 
@@ -109,6 +112,7 @@ function Framed({ map, w, h, frame, border = 0.12, glow = 0.3, index }: { map: T
         <planeGeometry args={[w, h]} />
         <meshStandardMaterial map={map} emissiveMap={map} emissive="#ffffff" emissiveIntensity={glow} roughness={0.6} />
       </mesh>
+      <ClickTag stop={JEE_STOP} near={18} position={[0, h / 2 + border + 0.4, 0.1]} label="Click to zoom" />
     </group>
   );
 }
@@ -470,6 +474,7 @@ function InstaPhone() {
           <planeGeometry args={[3.2, 6.6]} />
           <meshStandardMaterial map={screen} emissiveMap={screen} emissive="#ffffff" emissiveIntensity={0.85} roughness={0.25} />
         </mesh>
+        <ClickTag stop={stopOf("chillhai")} near={26} position={[0, 9.2, 0.2]} label="Click me · Instagram" />
       </group>
       {/* the stand, so the screen sits up where the camera can see it, and an invitation */}
       <mesh position={[0, 0.9, -0.05]} castShadow><boxGeometry args={[0.5, 1.8, 0.3]} /><meshStandardMaterial color="#e4007c" /></mesh>
@@ -546,6 +551,7 @@ function SpoDay() {
           <planeGeometry args={[7.8, 5.2]} />
           <meshStandardMaterial map={photo} emissiveMap={photo} emissive="#ffffff" emissiveIntensity={0.35} roughness={0.5} />
         </mesh>
+        <ClickTag stop={SPO_STOP} near={26} position={[0, 8.7, 4.7]} label="Click to zoom" />
       </group>
       <mesh position={[0, 2.25, 4.62]}><boxGeometry args={[5.6, 0.62, 0.1]} /><meshStandardMaterial color="#e91e8c" /></mesh>
       <Text font={FONT_SERIF} position={[0, 2.26, 4.69]} fontSize={0.34} color="#fff">SPO Day 2026 · IIT Kanpur</Text>
@@ -590,6 +596,7 @@ function IdCard() {
               <meshStandardMaterial map={card} emissiveMap={card} emissive="#ffffff" emissiveIntensity={0.3} roughness={0.35} metalness={0.05} />
             </mesh>
           ))}
+          <ClickTag stop={SPO_STOP} near={24} position={[0, H / 2 + 0.45, 0.1]} label="Click to zoom" />
         </group>
       </group>
     </group>
@@ -872,6 +879,7 @@ function Hall() {
             return (
               <group key={z} position={[sx * (W - 0.2), 6.7, z]} rotation-y={-sx * Math.PI / 2}>
                 <Banner b={b} />
+                {k === 1 && <ClickTag hall position={[0, 2.8, 0.1]} label="Click a banner" />}
                 <mesh position-y={2.25} material={gold}><boxGeometry args={[2.4, 0.08, 0.08]} /></mesh>
               </group>
             );
@@ -929,6 +937,7 @@ function DeckWall() {
           <group onClick={openUrl(`/decks/${d.file}.pdf`)} onPointerOver={() => pointer(true)} onPointerOut={() => pointer(false)}>
             <mesh position={[0, 2.55, 0]}><boxGeometry args={[2.72, 1.6, 0.06]} /><meshStandardMaterial color="#0b0b10" /></mesh>
             <mesh position={[0, 2.55, 0.035]} material={mats[i]}><planeGeometry args={[2.6, 1.46]} /></mesh>
+            {/* a screen in the open aisle, not behind the Meesho booth */ i === 2 && <ClickTag hall position={[0, 3.65, 0.1]} label="Click any deck" />}
           </group>
           <Text font={FONT_SERIF} position={[0, 1.42, 0.04]} fontSize={0.15} color="#f6f2ea" maxWidth={2.6} textAlign="center">{d.name}</Text>
         </group>
@@ -969,6 +978,7 @@ function MeeshoBooth() {
         <mesh position={[0, 2.75, -0.06]} castShadow><boxGeometry args={[3.5, 2.24, 0.1]} /><meshStandardMaterial color="#14141a" roughness={0.4} /></mesh>
         <mesh position={[0, 2.75, 0.0]}><planeGeometry args={[3.36, 2.1]} /><meshStandardMaterial map={proto} emissiveMap={proto} emissive="#ffffff" emissiveIntensity={0.7} /></mesh>
         <Text font={FONT_SERIF} position={[0, 1.45, 0.02]} fontSize={0.17} color="#f6f2ea">Live prototype · tap to try</Text>
+        <ClickTag hall position={[0, 4.3, 0]} label="Click to try it" />
       </group>
       <mesh position={[0, 0.3, 2.3]}><boxGeometry args={[4.6, 0.5, 0.15]} /><meshStandardMaterial color="#9f2089" /></mesh>
       <Text font={FONT_SERIF} position={[0, 0.32, 2.39]} fontSize={0.24} color="#ffffff">MEESHO DICE · SEMIFINALIST</Text>
@@ -1232,6 +1242,7 @@ function FounderPost() {
           <planeGeometry args={[4.4, 6.16]} />
           <meshStandardMaterial map={card} emissiveMap={card} emissive="#ffffff" emissiveIntensity={0.6} roughness={0.5} />
         </mesh>
+        <ClickTag stop={stopOf("nobroker")} near={28} position={[0, 8.5, 0.1]} label="Click to read the post" />
       </group>
       {[-1.5, 1.5].map((x) => <mesh key={x} position={[x, 0.35, -0.1]} castShadow><boxGeometry args={[0.18, 0.7, 0.18]} /><meshStandardMaterial color="#37474f" /></mesh>)}
       {state.map((h, i) => (
@@ -1297,6 +1308,7 @@ function Posters() {
             <mesh position-z={-0.02}><boxGeometry args={[W + 0.2, H + 0.2, 0.06]} /><meshStandardMaterial color={k === 4 ? "#ff8a65" : "#d4a83a"} metalness={0.6} roughness={0.35} /></mesh>
             <mesh position-z={0.02}><planeGeometry args={[W, H]} /><meshStandardMaterial map={maps[k]} emissiveMap={maps[k]} emissive="#ffffff" emissiveIntensity={0.75} toneMapped={false} /></mesh>
             <Text font={FONT_MONO} position={[0, -H / 2 - 0.36, 0.04]} fontSize={0.2} color={k === 4 ? "#ff8a65" : "#ffd54f"} anchorX="center" anchorY="middle">{f.tag.toUpperCase()}</Text>
+            {k === 2 && <ClickTag stop={stopOf("cinema")} near={30} position={[0, H / 2 + 0.55, 0.1]} label="Click a poster" />}
           </group>
         );
       })}
@@ -1434,6 +1446,7 @@ function PitchBoard({ k }: { k: number }) {
       <group ref={face} onClick={(e) => { e.stopPropagation(); ui.set({ plan: k, planNote: false }); }} onPointerOver={() => { hover.current = true; pointer(true); }} onPointerOut={() => { hover.current = false; pointer(false); }}>
         <mesh position={[0, 1.2 + H / 2, 0.36]} castShadow><boxGeometry args={[W + 0.16, H + 0.16, 0.08]} /><meshStandardMaterial color={color} roughness={0.6} /></mesh>
         <mesh position={[0, 1.2 + H / 2, 0.41]}><planeGeometry args={[W, H]} /><meshStandardMaterial map={map} emissiveMap={map} emissive="#ffffff" emissiveIntensity={0.32} roughness={0.75} /></mesh>
+        <ClickTag near={26} position={[0, 1.2 + H + 0.75, 0.5]} label="Click to read" />
       </group>
       {/* a little gallery lamp over it, and its glow */}
       <mesh position={[0, 1.4 + H + 0.25, 0.75]} rotation-x={0.5}><cylinderGeometry args={[0.12, 0.2, 0.32, 14]} /><meshStandardMaterial color="#2b2b30" metalness={0.6} roughness={0.35} /></mesh>

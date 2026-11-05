@@ -9,7 +9,7 @@ import { input } from "./input";
 import { bubbleAnchor, cue, sim, ui, walker } from "./store";
 import { BOUNDS, COLLIDERS, CURVE, START, STOP_U, nearestSample, roadHeading, SAMPLES } from "./track";
 import { voiceLevel } from "./sound";
-import { browse, deckAt, deckStand, ENTRANCE, INSIDE } from "./hall";
+import { browse, deckAt, deckStand, ENTRANCE, hallRoute, INSIDE, type HallPlace } from "./hall";
 import { count } from "./achievements";
 
 const WALK = 6.5, BACK = 2.6, TURN = 2.7, RADIUS = 0.45;
@@ -152,6 +152,14 @@ export function walkIntoHall() {
   const steps: Step[] = ui.get().onFoot ? [] : [{ kind: "exit" }];
   steps.push({ kind: "walk", to: ENTRANCE }, { kind: "walk", to: INSIDE });
   runScript(steps);
+}
+
+/** Inside the hall: walk him to the deck wall or a booth, along the aisles. */
+export function walkInHall(to: HallPlace) {
+  const s = ui.get();
+  if (s.phase !== "ride" || !s.onFoot || s.active !== null || scripted()) return;
+  const { pts, heading } = hallRoute(walker.pos, to);
+  runScript([...pts.map((p): Step => ({ kind: "walk", to: () => p })), { kind: "do", fn: () => { walker.heading = heading; } }]);
 }
 
 /** For trips that need the auto: if it's far, it pulls up behind him first; then he gets in. */
