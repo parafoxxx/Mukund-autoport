@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Mukund ki Auto: a 3D ride through my story</title>
-    <meta name="description" content="Drive an auto-rickshaw from Agra to IIT Kanpur to Wispr Flow. A 3D portfolio by Mukund Singhal, built entirely by voice." />
+    <meta name="description" content="Drive an auto-rickshaw from Agra to IIT Kanpur to Wispr Flow. A 3D portfolio by Mukund Singhal (IIT Kanpur), built with Wispr Flow + Claude Code. 2nd at the Sarvam AI hackathon, Top 7 of 3,000+ at The Ken × Zerodha, NoBroker PPO." />
+    <style>
+      /* The full story as plain text: for screen readers, AI screeners and no-JS readers. Hidden visually; the 3D ride tells the same story. */
+      .text-version { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: normal; border: 0; }    </style>
     <meta property="og:title" content="Mukund ki Auto: hop in" />
     <meta property="og:description" content="A 3D auto-rickshaw ride through my story. Drive with WASD, or just tell the driver where to go." />
     <meta name="theme-color" content="#0f0b08" />
@@ -15,6 +18,60 @@
   </head>
   <body>
     <div id="root"></div>
+    <main class="text-version" id="text-version" aria-label="Mukund ki Auto, the text version">
+      <h1>Mukund Singhal: Mukund ki Auto</h1>
+      <p>Final-year B.Tech at IIT Kanpur. Applying to the Wispr Flow India growth team. This site is a 3D road movie: you ride an auto-rickshaw through nine chapters of my life, by keyboard, touch or voice. This is the same story as plain text.</p>
+
+      <h2>Highlights</h2>
+      <ul>
+        <li>2nd place, Sarvam AI hackathon: Ek Awaaz, a live two-way interpreter that speaks in the speaker's own cloned voice (6 Sarvam models in one agent).</li>
+        <li>Top 7 of 3,000+ teams, The Ken × Zerodha 2026: I led Pacto, a Hinglish voice-and-chat accountability agent. In an 8-person pilot, regular no-shows turned into near-daily attendance.</li>
+        <li>Founded Chill Hai, a campus D2C brand: ₹3.75L+ revenue in a year, ₹1L+ in month one, ₹0 spent on ads.</li>
+        <li>Product intern at NoBroker, converted to a pre-placement offer (PPO).</li>
+        <li>Assistant Placement Coordinator, IIT Kanpur: led a 150+ person team; 75+ companies; 1,200+ placement and 500+ internship offers.</li>
+        <li>Semifinalist, Meesho DICE Season 3, with a working prototype. Nine case-competition decks in total.</li>
+      </ul>
+
+      <h2>The nine chapters</h2>
+      <ol>
+        <li><strong>Agra. Then the JEE grind.</strong> Grew up a few kilometres from the Taj. Till class 10: not bad, not great, very mid. Then I made my first real call: mid wasn't the plan. Two years of JEE.</li>
+        <li><strong>IIT Kanpur.</strong> Cracked JEE, made it to IIT Kanpur, and thought the hard part was over. Volunteered at SAMJHO, the National Science Fair, under Padmashri Dr. H. C. Verma; ran National Service Scheme drives; won 1st at Riwayat ’23 and 1st in Ultimate Frisbee at Inferno ’25 for my hall.</li>
+        <li><strong>A speed breaker, then the climb (a mistake I learned from).</strong> First-semester CPI: 7.0. No shortcuts after that: back-to-back 9.5 SPIs, and CPI from 7.0 to 8.0 by the 6th semester. Also: 1st in Product Club IITK's inter-secy case study competition; helped build IIT Kanpur's Product Management Casebook and ran its outreach (10,000+ LinkedIn impressions, 200% follower growth); mentored 30+ students in product design.</li>
+        <li><strong>Chill Hai (a chance I took).</strong> Started a campus D2C brand from zero in my second year and ran it for a year. Designed every product, negotiated with vendors, set prices for a student wallet, ran fulfilment. The call: ₹0 on ads, growing only on Instagram and word of mouth. ₹3.75L+ revenue.</li>
+        <li><strong>Placement Office.</strong> Assistant Placement Coordinator, April 2025 to May 2026. Led a 4-tier team of 150+ students; contact for 75+ companies from first outreach to interview day; 1,200+ placements and 500+ internships. Before that, managed NEXUS, an inter-IIT/IIM case competition: 250+ registrations, ₹3 lakh+ in sponsorships.</li>
+        <li><strong>Competitions &amp; hackathons.</strong> Nine case decks (BlinkX, Groww, Swiggy × IIT Kanpur, The Body Shop India, BrainAlive AI, Spotify, SARCathon 2024, ProdMad 4.0, Meesho DICE). Meesho DICE semifinal with the Bharat Trial Network; Sarvam AI hackathon 2nd place; Pacto Top 7 of 3,000+.</li>
+        <li><strong>NoBroker: product intern → PPO.</strong> Ran the field research for the HomeServices launch in Gurgaon: 50+ on-ground field audits, 1,663 societies mapped. Found that 30–35% of complaints weren't an ops problem, they were a product problem. My work was featured by the co-founder.</li>
+        <li><strong>Off duty: movies.</strong> Letterboxd top four: Fight Club, Memories of Murder, Predestination, The Wailing.</li>
+        <li><strong>Last stop: Wispr Flow, Bengaluru.</strong> Growth needs someone who talks to people, ships fast and measures everything.</li>
+      </ol>
+
+      <h2>How I built it, and the voice part</h2>
+      <p>Built with Wispr Flow + Claude Code. As of 5 Nov 2026 my Flow dashboard shows 2,953 words dictated at 160 words a minute (Top 0.1%), 99% of it as AI prompts (85 dictated prompts). Inside the ride, voice is a control, not a gimmick: you can drive the auto by saying “move”, “left”, “faster” or “take me to NoBroker” (English or Hindi), the avatar speaks 20 recorded Hinglish lines, and a “Say it, see it” billboard types what you say and shows your speaking speed.</p>
+
+      <h2>My first 90 days at Wispr Flow India</h2>
+      <p>Press reports put India at #2 for Wispr Flow by users, but only a small slice of in-app revenue. The job is to grow those users and turn them into paying ones.</p>
+      <ol>
+        <li><strong>“Bol ke likho”, a Hinglish creator programme:</strong> 50 micro-creators film type-vs-speak in Hinglish, paid per user who actually dictates in week one, not per view. Measure: cost per activated user, by creator.</li>
+        <li><strong>Campus ambassadors, timed to placement season:</strong> “dictate your SOP” sessions at IITs and NITs, plus a voice-only case-competition track. Measure: weekly active users per campus, referrals per ambassador.</li>
+        <li><strong>Price it for India, test on one campus first:</strong> a rupee student plan on UPI AutoPay plus a telecom or laptop bundle, tested for a month against a control campus. Measure: free-to-paid conversion.</li>
+      </ol>
+
+      <h2>Logistics</h2>
+      <p>Can start full-time in May. Ready to move to Bengaluru.</p>
+      <p>$3,000 grant: a standing desk with a real auto-rickshaw horn bolted to it. I stand for every creator and partner call, and every time we hit a growth metric, I honk.</p>
+
+      <h2>Links</h2>
+      <ul>
+        <li><a href="https://www.linkedin.com/in/mukund-singhal-7a2289259/">LinkedIn</a></li>
+        <li><a href="mailto:mkndsnghl@gmail.com">mkndsnghl@gmail.com</a></li>
+        <li><a href="https://github.com/parafoxxx">GitHub</a></li>
+        <li><a href="https://drive.google.com/file/d/149vbKqxgQWpGQynVWZD9IRx5LN8mSmCI/view?usp=sharing">The 3-minute build video</a></li>
+        <li><a href="https://saravam-hackon-mgnov3vtemdfbm2uwu6vpt.streamlit.app/">Ek Awaaz (Sarvam hackathon)</a> · <a href="https://github.com/parafoxxx/SARAVAM-hAckon">code</a></li>
+        <li><a href="https://vaibhav-itauriya.github.io/moshi-moshi-meesho-dice-3.0/">Meesho DICE prototype</a></li>
+        <li><a href="https://www.instagram.com/chill_hai.official/">Chill Hai on Instagram</a></li>
+      </ul>
+    </main>
+    <noscript><style>.text-version{position:static!important;width:auto;height:auto;clip:auto;clip-path:none;overflow:visible;max-width:760px;margin:0 auto;padding:32px 20px;color:#f3e9d8;font:16px/1.6 system-ui,sans-serif}body{background:#0f0b08}</style></noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

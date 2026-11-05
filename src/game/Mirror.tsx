@@ -1,5 +1,5 @@
-import { useMemo, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useEffect, useMemo, useRef } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { CHARMS, charmCanvas, openCharm } from "../ui/links";
@@ -30,7 +30,23 @@ const drape = (t: number) => {
 const FLOWERS = Array.from({ length: 30 }, (_, k) => drape(k / 29));
 const CHARM_T = CHARMS.map((_, k) => 0.16 + (0.68 * k) / (CHARMS.length - 1)); // spread evenly along the drape
 
-/** A lit diya, to sit in his right hand. */
+/*
+ * The two diya flames' lights (his, and his reflection's). They are in the scene from the very first frame, switched
+ * off. Adding a light later changes the light count, and three.js then rebuilds every shader in the world at once:
+ * that was the 2-4 s freeze on clicking him. With the count fixed, the mirror only moves them and turns them up.
+ */
+const diyaLights: (THREE.PointLight | null)[] = [null, null];
+export function DiyaLights() {
+  return (
+    <>
+      {[0, 1].map((k) => (
+        <pointLight key={k} ref={(l) => { diyaLights[k] = l; }} color="#ffb04a" intensity={0} distance={2.4} decay={2} />
+      ))}
+    </>
+  );
+}
+
+/** A lit diya, to sit in his right hand. (Its light is one of the DiyaLights.) */
 function Diya() {
   const flame = useRef<THREE.Mesh>(null);
   useFrame(({ clock }) => { const f = flame.current; if (f) { const t = clock.elapsedTime; f.scale.set(1 + Math.sin(t * 31) * 0.08, 1 + Math.sin(t * 23 + 1) * 0.14, 1); } });
@@ -40,7 +56,6 @@ function Diya() {
       <mesh position-y={0.015}><sphereGeometry args={[0.045, 14, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2]} /><meshStandardMaterial color="#b4532a" roughness={0.8} side={THREE.DoubleSide} /></mesh>
       <mesh ref={flame} position-y={0.06}><coneGeometry args={[0.018, 0.07, 10]} /><meshBasicMaterial color="#ffc34d" toneMapped={false} /></mesh>
       <mesh position-y={0.06}><sphereGeometry args={[0.05, 10, 8]} /><meshBasicMaterial color="#ff9a1a" transparent opacity={0.28} toneMapped={false} depthWrite={false} /></mesh>
-      <pointLight position-y={0.1} color="#ffb04a" intensity={1.6} distance={2.4} decay={2} />
     </group>
   );
 }
@@ -55,8 +70,19 @@ function boneMap(from: THREE.Object3D, to: THREE.Object3D) {
 }
 const findBone = (root: THREE.Object3D, name: string) => { let f: THREE.Object3D | undefined; root.traverse((o) => { if (!f && new RegExp(`(^|:)${name}$`).test(o.name)) f = o; }); return f; };
 
-export function MirrorScene({ scene }: { scene: THREE.Object3D }) {
+/**
+ * Mounted (hidden) soon after the title screen appears, so its copy of Mukund is built and its shaders compiled in
+ * the background. Clicking him then only flips `shown`, with nothing left to build.
+ */
+export function MirrorScene({ scene, shown }: { scene: THREE.Object3D; shown: boolean }) {
   const root = useRef<THREE.Group>(null);
+  const { gl, camera, scene: world } = useThree();
+  useEffect(() => {
+    const g = root.current;
+    const r = gl as unknown as { compileAsync?: (o: THREE.Object3D, c: THREE.Camera, t: THREE.Scene) => Promise<unknown> };
+    if (g && r.compileAsync) r.compileAsync(g, camera, world).catch(() => {});
+    return () => { for (const l of diyaLights) if (l) l.intensity = 0; };
+  }, [gl, camera, world]);
   const reflection = useMemo(() => {
     const c = cloneSkinned(scene);
     // the reflection is mirrored (negative scale), so its faces need drawing from both sides
@@ -76,8 +102,15 @@ export function MirrorScene({ scene }: { scene: THREE.Object3D }) {
   const hovered = useRef(-1);
   const grow = useRef(0);
   const p = useMemo(() => new THREE.Vector3(), []);
+  const lightAt = useMemo(() => new THREE.Vector3(), []);
   useFrame(({ clock }, dt) => {
     const g = root.current; if (!g) return;
+    g.visible = shown;
+    if (!shown) {
+      grow.current = 0;
+      for (const l of diyaLights) if (l) l.intensity = 0;
+      return;
+    }
     grow.current = Math.min(1, grow.current + dt * 2.2);
     const e = 1 - Math.pow(1 - grow.current, 3);
     g.scale.setScalar(0.6 + 0.4 * e);
@@ -87,6 +120,15 @@ export function MirrorScene({ scene }: { scene: THREE.Object3D }) {
     // the diya rides in his right hand, and in his reflection's
     if (hands.mine && myDiya.current?.parent) myDiya.current.position.copy(myDiya.current.parent.worldToLocal(hands.mine.getWorldPosition(p))).add(new THREE.Vector3(0, 0.06, 0.05));
     if (hands.theirs && theirDiya.current?.parent) theirDiya.current.position.copy(theirDiya.current.parent.worldToLocal(hands.theirs.getWorldPosition(p))).add(new THREE.Vector3(0, 0.06, 0.05));
+    // the flames' lights sit just above each diya (the lights live at the scene's root, so world coordinates)
+    [myDiya.current, theirDiya.current].forEach((d, k) => {
+      const l = diyaLights[k];
+      if (!l || !d) return;
+      d.getWorldPosition(lightAt); lightAt.y += 0.1;
+      if (l.parent) l.parent.worldToLocal(lightAt);
+      l.position.copy(lightAt);
+      l.intensity = 1.6 * e;
+    });
     charms.current.forEach((m, k) => {
       if (!m) return;
       m.rotation.z = Math.sin(clock.elapsedTime * 1.5 + k) * 0.07;
@@ -99,7 +141,7 @@ export function MirrorScene({ scene }: { scene: THREE.Object3D }) {
   const wood = <meshStandardMaterial color="#6b3d14" roughness={0.55} metalness={0.15} />;
   const sideW = (WALL.w - GLASS.w) / 2, topH = WALL.h - (GLASS.y + GLASS.h / 2), botH = GLASS.y - GLASS.h / 2;
   return (
-    <group ref={root}>
+    <group ref={root} visible={shown}>
       <group ref={myDiya}><Diya /></group>
       <group position-z={MIRROR_AT} rotation-y={Math.PI}>
         {/* the wall, built around the mirror's opening; it faces him (local +z after the turn) */}
@@ -130,9 +172,9 @@ export function MirrorScene({ scene }: { scene: THREE.Object3D }) {
           const [x, y] = drape(CHARM_T[k]);
           return (
             <group key={c.id} ref={(el) => { charms.current[k] = el; }} position={[x, y - 0.085, 0.19]}
-              onClick={(e) => { e.stopPropagation(); openCharm(c); }}
-              onPointerOver={(e) => { e.stopPropagation(); hovered.current = k; cursor(true); }}
-              onPointerOut={() => { hovered.current = -1; cursor(false); }}>
+              onClick={(e) => { if (!shown) return; e.stopPropagation(); openCharm(c); }}
+              onPointerOver={(e) => { if (!shown) return; e.stopPropagation(); hovered.current = k; cursor(true); }}
+              onPointerOut={() => { if (!shown) return; hovered.current = -1; cursor(false); }}>
               <mesh geometry={RIM} material={GOLD} />
               <mesh geometry={FACE} position-z={0.085}><meshStandardMaterial map={maps[k]} roughness={0.7} emissiveMap={maps[k]} emissive="#ffffff" emissiveIntensity={0.25} /></mesh>
             </group>

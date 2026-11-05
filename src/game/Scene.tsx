@@ -3,6 +3,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { PerformanceMonitor } from "@react-three/drei";
 import { Dust, Milestones, Poles } from "./Roadside";
 import { Character } from "./Character";
+import { DiyaLights } from "./Mirror";
 import * as THREE from "three";
 import { Auto, CameraRig, NextArrow } from "./Auto";
 import { Director, ReadySignal } from "./Director";
@@ -95,6 +96,7 @@ export default function Scene() {
       <Dust />
       <Auto />
       <Character />
+      <DiyaLights />
       <Player />
       <NextArrow />
       <CameraRig />

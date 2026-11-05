@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useRef, useState, type CSSProperties, type PointerEvent as RPointerEvent } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useProgress } from "@react-three/drei";
-import { CHAPTER_COUNT_WORD, DECKS, EXHIBITS, ME, STOPS, WISPR_PLAN } from "../content";
+import { CHAPTER_COUNT_WORD, DECKS, EXHIBITS, FLOW_STATS, ME, STOPS, TOP_WINS, WISPR_PLAN } from "../content";
 import { STORIES, type Story } from "../stories";
 import { HALL_STOP, inHall, spotNear, stepDeck, type Spot } from "../game/hall";
 import { startVoiceDrive, toggleVoiceDrive, voiceDriveSupported } from "../game/voiceDrive";
@@ -358,8 +358,35 @@ function Loader() {
           ) : (
             <p className="mono loader-t">{status} · {Math.floor(pct)}%</p>
           )}
+          {!askTap && <LoaderNote />}
         </motion.div>
       )}
+    </AnimatePresence>
+  );
+}
+
+/* ---------- the loader's small print: why the first ride is slower, and a few things to read meanwhile ---------- */
+const RETURNING = (() => { try { const v = localStorage.getItem("auto.rides"); localStorage.setItem("auto.rides", "1"); return v === "1"; } catch { return false; } })();
+const FIRST_RIDE = [
+  "First ride takes about 10 seconds. The auto is being assembled from scratch.",
+  "Bhaiya is pumping the tyres…",
+  "Polishing the mirror. Mukund will want to see himself in it.",
+  "Next time it's parked in your browser, so it starts much faster.",
+  "Meter down. Fare decided by how far you drive.",
+];
+const BACK_AGAIN = [
+  "Welcome back. Your auto was parked outside, so this one's quicker.",
+  "Same driver, same jokes. Faster start.",
+];
+function LoaderNote() {
+  const lines = RETURNING ? BACK_AGAIN : FIRST_RIDE;
+  const [k, setK] = useState(0);
+  useEffect(() => { const t = setInterval(() => setK((n) => (n + 1) % lines.length), 2600); return () => clearInterval(t); }, [lines.length]);
+  return (
+    <AnimatePresence mode="wait">
+      <motion.p key={k} className="loader-note" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.35 }}>
+        {lines[k]}
+      </motion.p>
     </AnimatePresence>
   );
 }
@@ -405,6 +432,9 @@ function TitleSequence() {
           {FIRST && <><b className="guest">Namaste {FIRST}, this ride is for you.</b><br /></>}
           A road movie in {CHAPTER_COUNT_WORD} chapters.<br />Agra → IIT Kanpur → Wispr Flow.
         </motion.p>
+        <motion.ul className="title-wins mono" aria-label="Highlights" {...up(1.5)}>
+          {TOP_WINS.map((w) => <li key={w}>{w}</li>)}
+        </motion.ul>
         <motion.div className="cta" {...up(1.6)}>
           <button className="btn-primary" onClick={primary.on} autoFocus>
             {coarse ? <IconPlay /> : null}{primary.label}{!coarse && <kbd>↵</kbd>}
@@ -431,7 +461,7 @@ function TitleSequence() {
           </motion.div>
         )}
       </div>
-      {!profile && <motion.p className="mono title-credit" {...up(2.1)}>Written &amp; directed by voice · Wispr Flow · sound on</motion.p>}
+      {!profile && <motion.p className="mono title-credit" {...up(2.1)}>Built with Wispr Flow + Claude Code · {FLOW_STATS.words} words dictated at {FLOW_STATS.wpm} wpm · sound on</motion.p>}
     </motion.div>
   );
 }
@@ -1254,7 +1284,7 @@ function ticketImage(o: { km: number; visited: number; badges: number; rider: nu
   g.fillStyle = "#8a7656"; g.font = "bold 20px monospace"; g.fillText("RIDER", 860, 150);
   g.fillStyle = "#1a1208"; g.font = "bold 74px Georgia, serif"; g.fillText(o.rider ? `#${o.rider}` : "#—", 860, 230, 240);
   g.fillStyle = "#6d5a40"; g.font = "26px Georgia, serif";
-  ["A 3D road movie", "of one growth", "builder's life.", "Directed by voice."].forEach((l, k) => g.fillText(l, 860, 320 + k * 38));
+  ["A 3D road movie", "of one growth", "builder's life.", "Built with Wispr Flow."].forEach((l, k) => g.fillText(l, 860, 320 + k * 38));
   g.fillStyle = "#e8902a"; g.font = "bold 24px monospace"; g.fillText(location.host.toUpperCase(), 860, 520, 240);
   return new Promise<Blob | null>((res) => c.toBlob(res, "image/png"));
 }

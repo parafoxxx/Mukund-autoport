@@ -23,6 +23,22 @@ export const ME = {
   },
 };
 
+/** My Wispr Flow dashboard, as of the date below. Update these from Insights if they change; never round up. */
+export const FLOW_STATS = {
+  words: "2,953",      // total words dictated
+  wpm: "160",          // words per minute (Top 0.1%)
+  prompts: "85",       // AI prompts dictated (99% of my Flow use)
+  asOf: "5 Nov 2026",
+};
+
+/** The headline wins, shown on the title screen for anyone who never starts the ride. */
+export const TOP_WINS = [
+  "2nd · Sarvam AI hackathon",
+  "Top 7 of 3,000+ teams · The Ken × Zerodha",
+  "₹3.75L+ D2C brand, ₹0 on ads",
+  "NoBroker PPO",
+];
+
 /** What I'd do first at Wispr Flow India: shown in the end credits, before the sign-off. */
 export const WISPR_PLAN = {
   hook: "Press reports put India at #2 for Wispr Flow by users, but only a small slice of in-app revenue. The users are already here. The job is to grow them and turn them into paying ones.",
@@ -193,7 +209,7 @@ export const STOPS: Stop[] = [
   {
     id: "wispr", name: "Wispr Flow", landmark: "billboard", color: "#ff3d00", sticker: "🚀",
     title: "Last stop: Wispr Flow, Bengaluru.",
-    lines: ["Growth needs someone who talks to people, ships fast and measures everything.", "I've done all three. And I built this entire ride by voice."],
+    lines: ["Growth needs someone who talks to people, ships fast and measures everything.", `I've done all three. And I built this ride by talking to Claude Code through Wispr Flow: ${FLOW_STATS.words} words dictated, at ${FLOW_STATS.wpm} words a minute.`],
     stats: [{ n: "May", l: "can start" }, { n: "Full-time", l: "available" }, { n: "Bengaluru", l: "ready to move" }],
     photo: "/photos/mukund.jpg", keywords: ["wispr", "whisper", "bengaluru", "bangalore", "job", "hire", "end", "last"],
     act: "conduct", then: "dance", quip: "Next stop: Wispr Flow. Main ready hoon.",

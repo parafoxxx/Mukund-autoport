@@ -1327,7 +1327,7 @@ function billboardTexture() {
     g.fillText(`${ME.name} · Growth, India`, textX, 310);
     g.font = "italic 32px Georgia, serif"; g.fillStyle = "#5d4037";
     const said = billboard.line.length > 44 ? billboard.line.slice(0, 43) + "…" : billboard.line;
-    g.fillText(said ? `“${said}”` : "This whole ride was built by voice.", textX, 380, 1024 - textX - 40);
+    g.fillText(said ? `“${said}”` : "This ride was built with Wispr Flow.", textX, 380, 1024 - textX - 40);
     g.font = "bold 30px Georgia, serif"; g.fillStyle = "#ff3d00";
     g.fillText("Can start in May · Bengaluru", textX, 440);
     tex.needsUpdate = true;

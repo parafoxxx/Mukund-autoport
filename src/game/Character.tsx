@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, type ReactNode } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -258,12 +258,22 @@ function Avatar({ mode, chapter }: { mode: "hero" | "chapter"; chapter: number |
     if (profile) { base.current = "conduct"; perform.current("conduct", 999); bell(); window.setTimeout(bell, 450); }
     else { base.current = "dance"; perform.current("dance"); }
   }, [profile, mode]);
+  // build the mirror (hidden) a moment after the title screen is up, off the loading path, so a click opens it at once
+  const opened = useUI((s) => s.opened);
+  const [mirrorBuilt, setMirrorBuilt] = useState(false);
+  useEffect(() => {
+    if (mode !== "hero" || mirrorBuilt) return;
+    if (profile) { setMirrorBuilt(true); return; } // clicked before the warm-up ran: build it now
+    if (!opened) return;
+    const t = window.setTimeout(() => setMirrorBuilt(true), 1200);
+    return () => window.clearTimeout(t);
+  }, [mode, opened, profile, mirrorBuilt]);
   const hover = (on: boolean) => { document.body.style.cursor = on ? "pointer" : ""; };
   return (
     <group>
       <primitive object={scene} />
       <DirectorChair />
-      {mode === "hero" && profile && <MirrorScene scene={scene} />}
+      {mode === "hero" && mirrorBuilt && <MirrorScene scene={scene} shown={profile} />}
       {/* an invisible, generous hit area: click him on the title screen and he goes to the mirror */}
       {!profile && (
         <mesh
